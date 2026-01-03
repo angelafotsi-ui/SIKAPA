@@ -276,6 +276,15 @@
             background: #2980b9;
         }
 
+        .btn-delete {
+            background: #c0392b;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #a93226;
+        }
+
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -677,6 +686,7 @@
                                                 <button class="btn btn-approve" onclick="updateStatus('withdraw', '${req.userId}', 'approved')">Approve</button>
                                                 <button class="btn btn-reject" onclick="updateStatus('withdraw', '${req.userId}', 'rejected')">Reject</button>
                                             ` : ''}
+                                            <button class="btn btn-delete" onclick="deleteRequest('withdraw', '${req.userId}', '${req.userEmail}')">Delete</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -740,6 +750,7 @@
                                                 <button class="btn btn-approve" onclick="updateStatus('cashout', '${req.userId}', 'approved')">Approve</button>
                                                 <button class="btn btn-reject" onclick="updateStatus('cashout', '${req.userId}', 'rejected')">Reject</button>
                                             ` : ''}
+                                            <button class="btn btn-delete" onclick="deleteRequest('cashout', '${req.userId}', '${req.userEmail}')">Delete</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -886,6 +897,43 @@
                     loadCashouts();
                 }
                 loadDashboardData();
+            }
+        }
+
+        async function deleteRequest(type, userId, userEmail) {
+            if (!confirm(`⚠️ Are you sure you want to permanently delete this request?\n\nUser: ${userEmail}\nThis action cannot be undone!`)) {
+                return;
+            }
+
+            try {
+                const endpoint = type === 'withdraw' 
+                    ? `/api/withdraw/delete/${userId}` 
+                    : `/api/cashout/delete/${userId}`;
+
+                const response = await fetch(endpoint, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(`✓ Request deleted successfully!`);
+                    if (type === 'withdraw') {
+                        loadWithdrawals();
+                    } else {
+                        loadCashouts();
+                    }
+                    loadDashboardData();
+                } else {
+                    alert(`Error: ${data.message || 'Failed to delete request'}`);
+                }
+            } catch (error) {
+                console.error('Error deleting request:', error);
+                alert(`Error: ${error.message}`);
             }
         }
 

@@ -162,4 +162,65 @@ router.get('/requests', (req, res) => {
     }
 });
 
+// Delete cashout request endpoint
+router.delete('/delete/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const logFile = path.join(__dirname, '../logs/cashout_requests.json');
+
+        if (!fs.existsSync(logFile)) {
+            return res.status(404).json({
+                success: false,
+                message: 'No cashout requests found'
+            });
+        }
+
+        let requests = JSON.parse(fs.readFileSync(logFile, 'utf8'));
+        const requestToDelete = requests.find(r => r.userId === userId);
+
+        if (!requestToDelete) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cashout request not found'
+            });
+        }
+
+        // Delete the screenshot file if it exists
+        if (requestToDelete.screenshotPath) {
+            const screenshotPath = path.join(__dirname, '..', requestToDelete.screenshotPath);
+            if (fs.existsSync(screenshotPath)) {
+                try {
+                    fs.unlinkSync(screenshotPath);
+                    console.log('[Cashout] Deleted screenshot:', screenshotPath);
+                } catch (err) {
+                    console.error('[Cashout] Failed to delete screenshot:', err);
+                }
+            }
+        }
+
+        // Remove request from array
+        requests = requests.filter(r => r.userId !== userId);
+        
+        // Save updated requests back to file
+        fs.writeFileSync(logFile, JSON.stringify(requests, null, 2));
+
+        console.log('[Cashout] Request deleted:', {
+            userId,
+            userEmail: requestToDelete.userEmail,
+            amount: requestToDelete.amount
+        });
+
+        res.json({
+            success: true,
+            message: 'Cashout request deleted successfully'
+        });
+    } catch (error) {
+        console.error('[Cashout] Error deleting request:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting cashout request: ' + error.message
+        });
+    }
+});
+
 module.exports = router;

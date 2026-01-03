@@ -114,4 +114,52 @@ router.get('/requests', (req, res) => {
     }
 });
 
+// Delete withdrawal request endpoint
+router.delete('/delete/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const logFile = path.join(__dirname, '../logs/withdraw_requests.json');
+
+        if (!fs.existsSync(logFile)) {
+            return res.status(404).json({
+                success: false,
+                message: 'No withdrawal requests found'
+            });
+        }
+
+        let requests = JSON.parse(fs.readFileSync(logFile, 'utf8'));
+        const requestToDelete = requests.find(r => r.userId === userId);
+
+        if (!requestToDelete) {
+            return res.status(404).json({
+                success: false,
+                message: 'Withdrawal request not found'
+            });
+        }
+
+        // Remove request from array
+        requests = requests.filter(r => r.userId !== userId);
+        
+        // Save updated requests back to file
+        fs.writeFileSync(logFile, JSON.stringify(requests, null, 2));
+
+        console.log('[Withdraw] Request deleted:', {
+            userId,
+            userEmail: requestToDelete.userEmail,
+            amount: requestToDelete.amount
+        });
+
+        res.json({
+            success: true,
+            message: 'Withdrawal request deleted successfully'
+        });
+    } catch (error) {
+        console.error('[Withdraw] Error deleting request:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting withdrawal request: ' + error.message
+        });
+    }
+});
+
 module.exports = router;
