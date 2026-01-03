@@ -14,6 +14,8 @@
             if (!isUserLoggedIn()) {
                 window.location.href = 'login.html';
             }
+            // Update UI with user info and admin button if applicable
+            updateAuthUI();
         });
     </script>
 

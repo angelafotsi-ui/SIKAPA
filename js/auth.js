@@ -1,5 +1,7 @@
 // Auth utilities
 
+const ADMIN_EMAIL = 'fotsiemmanuel397@gmail.com';
+
 // Check if user is logged in
 function isUserLoggedIn() {
   const userEmail = localStorage.getItem('user_email');
@@ -7,6 +9,14 @@ function isUserLoggedIn() {
   const isLoggedIn = userEmail !== null && authToken !== null;
   console.log('[Auth] isUserLoggedIn check:', { userEmail, hasToken: authToken !== null, isLoggedIn });
   return isLoggedIn;
+}
+
+// Check if user is admin
+function isUserAdmin() {
+  const userEmail = localStorage.getItem('user_email');
+  const isAdmin = userEmail === ADMIN_EMAIL;
+  console.log('[Auth] isUserAdmin check:', { userEmail, isAdmin });
+  return isAdmin;
 }
 
 // Get logged in user info
@@ -53,8 +63,17 @@ function updateAuthUI() {
     let displayName = userName || userEmail.split('@')[0];
     // Get only first name
     displayName = displayName.split(' ')[0];
+    
+    let authHTML = '';
+    // Add Admin Dashboard button if user is admin
+    if (isUserAdmin()) {
+      authHTML += '<a href="admin.html" style="margin-right: 15px;">📊 Admin Dashboard</a>';
+    }
+    // Add logout button
+    authHTML += `<a href="#" onclick="logoutUser(); return false;">Logout (${displayName})</a>`;
+    
     authLinks.forEach(link => {
-      link.innerHTML = `<a href="#" onclick="logoutUser(); return false;">Logout (${displayName})</a>`;
+      link.innerHTML = authHTML;
     });
   } else {
     // User is not logged in

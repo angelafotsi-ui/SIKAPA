@@ -4,16 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - SIKAPA</title>
+    <script src="js/auth.js"></script>
     <script>
         // Admin authorization check
-        const ADMIN_EMAIL = 'fotsiemmanuel397@gmail.com';
-        
         function checkAdminAccess() {
-            const userEmail = localStorage.getItem('userEmail');
-            if (!userEmail || userEmail !== ADMIN_EMAIL) {
-                // Redirect to admin login page
-                window.location.href = 'admin-login.html';
+            // Check if user is logged in
+            if (!isUserLoggedIn()) {
+                console.log('[Admin] User not logged in, redirecting to login');
+                window.location.href = 'login.html';
+                return;
             }
+            
+            // Check if user is admin
+            if (!isUserAdmin()) {
+                console.log('[Admin] User is not admin, redirecting to home');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            console.log('[Admin] Admin access granted');
         }
         
         // Check access on page load
