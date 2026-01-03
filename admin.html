@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SIKAPA</title>
+    <script>
+        // Admin authorization check
+        const ADMIN_EMAIL = 'fotsiemmanuel397@gmail.com';
+        
+        function checkAdminAccess() {
+            const userEmail = localStorage.getItem('userEmail');
+            if (!userEmail || userEmail !== ADMIN_EMAIL) {
+                // Redirect to admin login page
+                window.location.href = 'admin-login.html';
+            }
+        }
+        
+        // Check access on page load
+        window.addEventListener('load', checkAdminAccess);
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 0;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-menu button {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: left;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+
+        .sidebar-menu button:hover,
+        .sidebar-menu button.active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .top-bar h1 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .requests-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: #f9f9f9;
+            padding: 15px 20px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            background: #f9f9f9;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+            color: #333;
+        }
+
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #666;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-approve {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #229954;
+        }
+
+        .btn-reject {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #c0392b;
+        }
+
+        .btn-view {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #2980b9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .detail-row label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .detail-row value {
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-section select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .sidebar-menu li {
+                flex: 1;
+                min-width: 150px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>💎 SIKAPA Admin</h2>
+            <ul class="sidebar-menu">
+                <li><button class="menu-btn active" data-section="dashboard">Dashboard</button></li>
+                <li><button class="menu-btn" data-section="withdrawals">Withdrawals</button></li>
+                <li><button class="menu-btn" data-section="cashouts">Cashouts</button></li>
+                <li><button class="menu-btn" data-section="users">Users</button></li>
+                <li><button class="menu-btn" data-section="transactions">Transactions</button></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <h1 id="section-title">Dashboard</h1>
+                <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Withdrawals</h3>
+                        <div class="number" id="total-withdrawals">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pending Withdrawals</h3>
+                        <div class="number" id="pending-withdrawals">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Cashouts</h3>
+                        <div class="number" id="total-cashouts">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pending Cashouts</h3>
+                        <div class="number" id="pending-cashouts">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <div class="number" id="total-users">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Transactions</h3>
+                        <div class="number" id="total-transactions">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Withdrawals Section -->
+            <div id="withdrawals" class="section">
+                <div class="filter-section">
+                    <label>Filter by Status:</label>
+                    <select id="withdrawal-filter">
+                        <option value="">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="requests-table">
+                    <div class="table-header">
+                        <h2>Withdrawal Requests</h2>
+                    </div>
+                    <div id="withdrawals-container">
+                        <div class="loading">Loading withdrawals...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cashouts Section -->
+            <div id="cashouts" class="section">
+                <div class="filter-section">
+                    <label>Filter by Status:</label>
+                    <select id="cashout-filter">
+                        <option value="">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="requests-table">
+                    <div class="table-header">
+                        <h2>Cashout Requests</h2>
+                    </div>
+                    <div id="cashouts-container">
+                        <div class="loading">Loading cashouts...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="users" class="section">
+                <div class="requests-table">
+                    <div class="table-header">
+                        <h2>Registered Users</h2>
+                    </div>
+                    <div id="users-container">
+                        <div class="loading">Loading users...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Section -->
+            <div id="transactions" class="section">
+                <div class="requests-table">
+                    <div class="table-header">
+                        <h2>Transaction History</h2>
+                    </div>
+                    <div id="transactions-container">
+                        <div class="loading">Loading transactions...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Request Details</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // Check admin access
+        document.addEventListener('DOMContentLoaded', function() {
+            // For now, allow access (in production, add proper admin authentication)
+            loadDashboardData();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Menu buttons
+            document.querySelectorAll('.menu-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    switchSection(section);
+                });
+            });
+
+            // Filters
+            document.getElementById('withdrawal-filter').addEventListener('change', function() {
+                loadWithdrawals(this.value);
+            });
+
+            document.getElementById('cashout-filter').addEventListener('change', function() {
+                loadCashouts(this.value);
+            });
+        }
+
+        function switchSection(section) {
+            // Update active menu button
+            document.querySelectorAll('.menu-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${section}"]`).classList.add('active');
+
+            // Update section title
+            const titles = {
+                dashboard: 'Dashboard',
+                withdrawals: 'Withdrawal Requests',
+                cashouts: 'Cashout Requests',
+                users: 'Users',
+                transactions: 'Transactions'
+            };
+            document.getElementById('section-title').textContent = titles[section];
+
+            // Show active section
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.getElementById(section).classList.add('active');
+
+            // Load data
+            if (section === 'withdrawals') loadWithdrawals();
+            else if (section === 'cashouts') loadCashouts();
+            else if (section === 'users') loadUsers();
+            else if (section === 'transactions') loadTransactions();
+        }
+
+        async function loadDashboardData() {
+            try {
+                const [withdraws, cashouts, users, transactions] = await Promise.all([
+                    fetch('/api/withdraw/requests').then(r => r.json()),
+                    fetch('/api/cashout/requests').then(r => r.json()),
+                    fetch('/api/admin/users').then(r => r.json()),
+                    fetch('/api/admin/transactions').then(r => r.json())
+                ]);
+
+                const withdrawData = withdraws.requests || [];
+                const cashoutData = cashouts.requests || [];
+                const usersData = users.users || [];
+                const transData = transactions.transactions || [];
+
+                document.getElementById('total-withdrawals').textContent = withdrawData.length;
+                document.getElementById('pending-withdrawals').textContent = withdrawData.filter(w => w.status === 'pending').length;
+                document.getElementById('total-cashouts').textContent = cashoutData.length;
+                document.getElementById('pending-cashouts').textContent = cashoutData.filter(c => c.status === 'pending').length;
+                document.getElementById('total-users').textContent = usersData.length;
+                document.getElementById('total-transactions').textContent = transData.length;
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        async function loadWithdrawals(filter = '') {
+            try {
+                const response = await fetch('/api/withdraw/requests');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                let requests = data.requests || [];
+
+                if (filter) {
+                    requests = requests.filter(r => r.status === filter);
+                }
+
+                const html = requests.length ? `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User Email</th>
+                                <th>Wallet ID</th>
+                                <th>Wallet Name</th>
+                                <th>Amount (₵)</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${requests.map(req => `
+                                <tr>
+                                    <td>${req.userId ? req.userId.substring(0, 8) : 'N/A'}...</td>
+                                    <td>${req.userEmail || 'N/A'}</td>
+                                    <td>${req.walletId || 'N/A'}</td>
+                                    <td>${req.walletIdName || 'N/A'}</td>
+                                    <td>${req.amount ? parseFloat(req.amount).toFixed(2) : '0.00'}</td>
+                                    <td><span class="status-badge status-${req.status || 'pending'}">${req.status || 'pending'}</span></td>
+                                    <td>${new Date(req.createdAt).toLocaleDateString()}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-view" onclick="viewDetail('withdrawal', '${JSON.stringify(req).replace(/'/g, "\\'")}')">View</button>
+                                            ${req.status === 'pending' ? `
+                                                <button class="btn btn-approve" onclick="updateStatus('withdraw', '${req.userId}', 'approved')">Approve</button>
+                                                <button class="btn btn-reject" onclick="updateStatus('withdraw', '${req.userId}', 'rejected')">Reject</button>
+                                            ` : ''}
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : '<div class="empty-state"><p>No withdrawal requests found</p></div>';
+
+                document.getElementById('withdrawals-container').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading withdrawals:', error);
+                document.getElementById('withdrawals-container').innerHTML = '<div class="empty-state"><p>Error loading withdrawals: ' + error.message + '</p></div>';
+            }
+        }
+
+        async function loadCashouts(filter = '') {
+            try {
+                const response = await fetch('/api/cashout/requests');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                let requests = data.requests || [];
+
+                if (filter) {
+                    requests = requests.filter(r => r.status === filter);
+                }
+
+                const html = requests.length ? `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User Email</th>
+                                <th>Token ID</th>
+                                <th>Secret Code</th>
+                                <th>Wallet ID</th>
+                                <th>Amount (₵)</th>
+                                <th>Screenshot</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${requests.map(req => `
+                                <tr>
+                                    <td>${req.userId ? req.userId.substring(0, 8) : 'N/A'}...</td>
+                                    <td>${req.userEmail || 'N/A'}</td>
+                                    <td>${req.tokenId || 'N/A'}</td>
+                                    <td><strong>${req.secretCode || 'N/A'}</strong></td>
+                                    <td>${req.walletId || 'N/A'}</td>
+                                    <td>${req.amount ? parseFloat(req.amount).toFixed(2) : '0.00'}</td>
+                                    <td>${req.screenshotPath ? `<a href="${req.screenshotPath}" target="_blank" style="color: #3498db; text-decoration: none;">View</a>` : 'N/A'}</td>
+                                    <td><span class="status-badge status-${req.status || 'pending'}">${req.status || 'pending'}</span></td>
+                                    <td>${new Date(req.createdAt).toLocaleDateString()}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-view" onclick="viewDetail('cashout', '${JSON.stringify(req).replace(/'/g, "\\'")}')">View</button>
+                                            ${req.status === 'pending' ? `
+                                                <button class="btn btn-approve" onclick="updateStatus('cashout', '${req.userId}', 'approved')">Approve</button>
+                                                <button class="btn btn-reject" onclick="updateStatus('cashout', '${req.userId}', 'rejected')">Reject</button>
+                                            ` : ''}
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : '<div class="empty-state"><p>No cashout requests found</p></div>';
+
+                document.getElementById('cashouts-container').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading cashouts:', error);
+                document.getElementById('cashouts-container').innerHTML = '<div class="empty-state"><p>Error loading cashouts: ' + error.message + '</p></div>';
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+                const data = await response.json();
+                const users = data.users || [];
+
+                const html = users.length ? `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Email</th>
+                                <th>Name</th>
+                                <th>Joined</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map(user => `
+                                <tr>
+                                    <td>${user.uid ? user.uid.substring(0, 8) : 'N/A'}...</td>
+                                    <td>${user.email}</td>
+                                    <td>${user.displayName || 'N/A'}</td>
+                                    <td>${new Date(user.createdAt || user.metadata?.creationTime).toLocaleDateString()}</td>
+                                    <td><span class="status-badge status-completed">${user.disabled ? 'Disabled' : 'Active'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : '<div class="empty-state"><p>No users found</p></div>';
+
+                document.getElementById('users-container').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('users-container').innerHTML = '<div class="empty-state"><p>Error loading users</p></div>';
+            }
+        }
+
+        async function loadTransactions() {
+            try {
+                const [withdraws, cashouts] = await Promise.all([
+                    fetch('/api/withdraw/requests').then(r => r.json()),
+                    fetch('/api/cashout/requests').then(r => r.json())
+                ]);
+
+                const withdrawData = (withdraws.requests || []).map(w => ({
+                    ...w,
+                    type: 'Withdrawal'
+                }));
+                const cashoutData = (cashouts.requests || []).map(c => ({
+                    ...c,
+                    type: 'Cashout'
+                }));
+
+                const allTransactions = [...withdrawData, ...cashoutData]
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                const html = allTransactions.length ? `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>User Email</th>
+                                <th>Amount (₵)</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${allTransactions.map(trans => `
+                                <tr>
+                                    <td><strong>${trans.type}</strong></td>
+                                    <td>${trans.userEmail}</td>
+                                    <td>${trans.amount.toFixed(2)}</td>
+                                    <td><span class="status-badge status-${trans.status || 'pending'}">${trans.status || 'pending'}</span></td>
+                                    <td>${new Date(trans.createdAt).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : '<div class="empty-state"><p>No transactions found</p></div>';
+
+                document.getElementById('transactions-container').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                document.getElementById('transactions-container').innerHTML = '<div class="empty-state"><p>Error loading transactions</p></div>';
+            }
+        }
+
+        function viewDetail(type, detail) {
+            const req = JSON.parse(detail);
+            const modal = document.getElementById('detail-modal');
+            const body = document.getElementById('modal-body');
+            
+            const fields = type === 'withdrawal' 
+                ? ['userId', 'userEmail', 'walletId', 'walletIdName', 'walletNetwork', 'amount', 'status', 'createdAt']
+                : ['userId', 'userEmail', 'tokenId', 'walletId', 'amount', 'status', 'createdAt'];
+
+            let html = '';
+            fields.forEach(field => {
+                if (req[field] !== undefined) {
+                    let value = req[field];
+                    if (field === 'createdAt') {
+                        value = new Date(value).toLocaleString();
+                    } else if (field === 'amount') {
+                        value = `₵${parseFloat(value).toFixed(2)}`;
+                    }
+                    const label = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    html += `<div class="detail-row"><label>${label}:</label><value>${value}</value></div>`;
+                }
+            });
+
+            document.getElementById('modal-title').textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} Details`;
+            body.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.remove('active');
+        }
+
+        function updateStatus(type, userId, status) {
+            if (confirm(`Are you sure you want to ${status} this request?`)) {
+                // In production, send to backend
+                alert(`Request ${status} successfully! (Demo mode)`);
+                if (type === 'withdraw') {
+                    loadWithdrawals();
+                } else {
+                    loadCashouts();
+                }
+                loadDashboardData();
+            }
+        }
+
+        function logoutAdmin() {
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('authToken');
+            window.location.href = 'auth.html';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('detail-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+</html>

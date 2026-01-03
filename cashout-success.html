@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashout Successful - SIKAPA</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .success-container {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .success-card {
+            background: white;
+            border-radius: 15px;
+            padding: 3rem 2rem;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            animation: bounce 0.8s ease-out;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: scale(0);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .success-card h1 {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .success-card .subtitle {
+            font-size: 1.3rem;
+            color: #764ba2;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .success-card .info {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.8;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .success-card .thanks {
+            font-size: 1.2rem;
+            color: #333;
+            font-weight: 600;
+            margin-top: 2rem;
+        }
+
+        .success-card .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .action-buttons button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .home-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .new-request-btn {
+            background: #f0f0f0;
+            color: #667eea;
+            flex: 1;
+            min-width: 150px;
+            border: 2px solid #667eea;
+        }
+
+        .new-request-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .checkmark {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .checkmark::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .success-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .success-card h1 {
+                font-size: 2rem;
+            }
+
+            .success-card .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">💎 SIKAPA</div>
+            <ul class="nav-links">
+                <li id="auth-link" class="auth-link"></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Success Container -->
+    <div class="success-container">
+        <div class="success-card">
+            <div class="checkmark"></div>
+            <h1>CONGRATULATIONS</h1>
+            <p class="subtitle">Processing your request</p>
+            
+            <div class="info">
+                <p>You must receive your reward within <strong>5 - 10 minutes</strong></p>
+            </div>
+
+            <p class="thanks">Thank You</p>
+
+            <div class="action-buttons">
+                <button class="home-btn" onclick="window.location.href='index.html'">Back to Home</button>
+                <button class="new-request-btn" onclick="window.location.href='cashout.html'">New Request</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Check authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isUserLoggedIn()) {
+                window.location.href = '/auth.html';
+            }
+            updateAuthUI();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sikapa - Community Payments Platform</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <script src="js/auth.js"></script>
+    <script>
+        // Check authentication - redirect to login if not authenticated
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isUserLoggedIn()) {
+                window.location.href = '/auth.html';
+            }
+        });
+    </script>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">💎 SIKAPA</div>
+            <ul class="nav-links">
+                <li id="auth-link" class="auth-link"></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to Sikapa</h1>
+            <p>Fast, secure community payments for everyone</p>
+            
+            <!-- Total Balance Display -->
+            <div class="balance-display">
+                <div class="balance-card">
+                    <p class="balance-label">Total Balance</p>
+                    <p class="balance-amount">₵ <span id="balanceAmount">0.00</span></p>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="cta-button cashout-btn" onclick="window.location.href='cashout.html'">Cashout</button>
+                <button class="cta-button withdraw-btn" onclick="window.location.href='withdraw.html'">Withdraw</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <h2>Key Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>💳 Instant Payments</h3>
+                <p>Send and receive money instantly, 24/7</p>
+            </div>
+            <div class="feature-card">
+                <h3>🔒 Secure</h3>
+                <p>Bank-grade security for your peace of mind</p>
+            </div>
+            <div class="feature-card">
+                <h3>💰 Low Fees</h3>
+                <p>Competitive rates for all transactions</p>
+            </div>
+            <div class="feature-card">
+                <h3>🌍 Global</h3>
+                <p>Connect with communities worldwide</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Sikapa. All rights reserved.</p>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

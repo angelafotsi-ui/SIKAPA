@@ -1,0 +1,33 @@
+[
+  {
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "userEmail": "fotsiemmanuel397@gmail.com",
+    "tokenId": "0983644748",
+    "walletId": "1616255354",
+    "amount": "100",
+    "screenshotPath": "/uploads/cashout/aU1rCqPO3SclZfIqbQMOKr7h2H02_1767378903058_carros-png-beautiful-4k-o-range-rover-sport-autobiografia-2017-carros-vermelho-range-of-carros-png.jpeg",
+    "status": "pending",
+    "createdAt": "2026-01-02T18:35:03.059Z"
+  },
+  {
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "userEmail": "fotsiemmanuel397@gmail.com",
+    "tokenId": "1122334455",
+    "walletId": "0505573287",
+    "amount": "300",
+    "screenshotPath": "/uploads/cashout/aU1rCqPO3SclZfIqbQMOKr7h2H02_1767383390261_carros-png-beautiful-4k-o-range-rover-sport-autobiografia-2017-carros-vermelho-range-of-carros-png.jpeg",
+    "status": "pending",
+    "createdAt": "2026-01-02T19:49:50.279Z"
+  },
+  {
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "userEmail": "fotsiemmanuel397@gmail.com",
+    "tokenId": "444455556666",
+    "secretCode": "1234",
+    "walletId": "0592680202",
+    "amount": "500",
+    "screenshotPath": "/uploads/cashout/aU1rCqPO3SclZfIqbQMOKr7h2H02_1767383976109_carros-png-beautiful-4k-o-range-rover-sport-autobiografia-2017-carros-vermelho-range-of-carros-pngj.peg",
+    "status": "pending",
+    "createdAt": "2026-01-02T19:59:36.111Z"
+  }
+]

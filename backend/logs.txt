@@ -1,0 +1,25 @@
+[0] Starting unified Sikapa server...
+
+✓ Service account loaded from: C:\Users\HEDGEHOG\Downloads\SIKAPA\backend\backendserviceAccountKey.json
+✓ Firebase App initialized
+✓ Firebase services loaded (Firestore + Auth)
+[1] Firebase initialized
+[2] Middleware configured
+[3] API routes mounted
+[4] Static files configured
+[5] Routes configured
+[6] Server started
+[7] Ready for connections
+
+
+✅ Sikapa Unified Server running on http://localhost:3000
+
+📍 Available at:
+   🏠 Landing page: http://localhost:3000
+   📝 Sign Up: http://localhost:3000/signup.html
+   🔐 Log In: http://localhost:3000/login.html
+   💳 Checkout: http://localhost:3000/payments/checkout.html
+   🏥 Health: http://localhost:3000/api/health
+
+🔌 API Base: http://localhost:3000/api
+

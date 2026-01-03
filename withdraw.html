@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdraw - SIKAPA</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .withdraw-container {
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .withdraw-container h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 2rem;
+        }
+
+        .heading-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .money-animation {
+            font-size: 2.5rem;
+            animation: moneyBounce 1.2s ease-in-out infinite;
+        }
+
+        @keyframes moneyBounce {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            25% {
+                transform: translateY(-15px) rotate(-10deg);
+            }
+            50% {
+                transform: translateY(0) rotate(0deg);
+            }
+            75% {
+                transform: translateY(-10px) rotate(10deg);
+            }
+            100% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .withdraw-button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 2rem;
+        }
+
+        .withdraw-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .withdraw-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        .success-message {
+            color: #27ae60;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        .label-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #333;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: help;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .info-icon:hover {
+            background: #000;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #333;
+        }
+
+        .info-icon:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        @media (max-width: 500px) {
+            .tooltip {
+                white-space: normal;
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">💎 SIKAPA</div>
+            <ul class="nav-links">
+                <li id="auth-link" class="auth-link"></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Withdraw Form -->
+    <div class="withdraw-container">
+        <div class="heading-container">
+            <h1>Withdraw Request</h1>
+            <div class="money-animation">💰</div>
+        </div>
+        <form id="withdrawForm">
+            <!-- Wallet ID -->
+            <div class="form-group">
+                <label for="walletId">Wallet ID *</label>
+                <input 
+                    type="text" 
+                    id="walletId" 
+                    name="walletId" 
+                    placeholder="Enter your wallet ID" 
+                    required
+                >
+                <div class="error-message" id="walletIdError"></div>
+            </div>
+
+            <!-- Wallet ID Name -->
+            <div class="form-group">
+                <label for="walletIdName">Wallet ID Name *</label>
+                <input 
+                    type="text" 
+                    id="walletIdName" 
+                    name="walletIdName" 
+                    placeholder="e.g. Abigail Ansah" 
+                    required
+                >
+                <div class="error-message" id="walletIdNameError"></div>
+            </div>
+
+            <!-- Wallet ID Network -->
+            <div class="form-group">
+                <label for="walletNetwork">Wallet ID Network *</label>
+                <select 
+                    id="walletNetwork" 
+                    name="walletNetwork" 
+                    required
+                >
+                    <option value="">Select Network</option>
+                    <option value="mtn">MTN Mobile Money</option>
+                    <option value="vodafone">Vodafone Cash</option>
+                    <option value="airtel">Airtel Money</option>
+                    <option value="bank">Bank Transfer</option>
+                    <option value="other">Other</option>
+                </select>
+                <div class="error-message" id="walletNetworkError"></div>
+            </div>
+
+            <!-- Amount -->
+            <div class="form-group">
+                <label for="amount">Amount * (₵)</label>
+                <input 
+                    type="number" 
+                    id="amount" 
+                    name="amount" 
+                    placeholder="Enter amount to withdraw" 
+                    step="0.01"
+                    min="0"
+                    required
+                >
+                <div class="error-message" id="amountError"></div>
+            </div>
+
+            <!-- Withdraw Button -->
+            <button type="submit" class="withdraw-button">Withdraw</button>
+        </form>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Check authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isUserLoggedIn()) {
+                window.location.href = '/auth.html';
+            }
+            updateAuthUI();
+        });
+
+        // Form submission
+        document.getElementById('withdrawForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+            // Validation
+            const walletId = document.getElementById('walletId').value.trim();
+            const walletIdName = document.getElementById('walletIdName').value.trim();
+            const walletNetwork = document.getElementById('walletNetwork').value.trim();
+            const amount = document.getElementById('amount').value.trim();
+
+            let isValid = true;
+
+            if (!walletId) {
+                document.getElementById('walletIdError').textContent = 'Wallet ID is required';
+                isValid = false;
+            }
+
+            if (!walletIdName) {
+                document.getElementById('walletIdNameError').textContent = 'Wallet ID Name is required';
+                isValid = false;
+            }
+
+            if (!walletNetwork) {
+                document.getElementById('walletNetworkError').textContent = 'Please select a network';
+                isValid = false;
+            }
+
+            if (!amount) {
+                document.getElementById('amountError').textContent = 'Amount is required';
+                isValid = false;
+            }
+
+            if (amount && isNaN(parseFloat(amount))) {
+                document.getElementById('amountError').textContent = 'Amount must be a valid number';
+                isValid = false;
+            }
+
+            if (amount && parseFloat(amount) <= 0) {
+                document.getElementById('amountError').textContent = 'Amount must be greater than 0';
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            try {
+                const response = await fetch('/api/withdraw/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getAuthToken()
+                    },
+                    body: JSON.stringify({
+                        walletId,
+                        walletIdName,
+                        walletNetwork,
+                        amount,
+                        userEmail: getUserEmail(),
+                        userId: getUserId()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Redirect to success page
+                    window.location.href = 'withdraw-success.html';
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to submit withdraw request'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error submitting withdraw request: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sikapa - Admin Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .welcome-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            margin-top: 80px;
+        }
+        .welcome-section h2 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .welcome-section p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            margin: 20px auto;
+            backdrop-filter: blur(10px);
+        }
+        .user-info p {
+            margin: 10px 0;
+            font-size: 1em;
+        }
+        .dashboard-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .dashboard-buttons a {
+            background: white;
+            color: #667eea;
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .dashboard-buttons a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isUserLoggedIn()) {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">SIKAPA</div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#for-communities">Communities</a></li>
+                <li><a href="#for-merchants">Merchants</a></li>
+                <li><a href="payments/checkout.html">Payments</a></li>
+                <li class="auth-link"></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+        <h2>Welcome to Sikapa Admin</h2>
+        <p>Your secure payment and community management platform</p>
+        
+        <div class="user-info">
+            <p><strong>User Account:</strong></p>
+            <p id="user-email"></p>
+            <p id="user-name"></p>
+        </div>
+
+        <div class="dashboard-buttons">
+            <a href="payments/checkout.html">💳 Process Payments</a>
+            <a href="test-api.html">🏥 Test API</a>
+            <a href="#" onclick="logoutUser(); return false;">🚪 Logout</a>
+        </div>
+    </section>
+
+    <!-- Features Overview -->
+    <section class="features-overview" id="features">
+        <h2>Why Choose Sikapa?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Bank-Grade Security</h3>
+                <p>Enterprise-level encryption and compliance standards</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Lightning Fast</h3>
+                <p>Near-instant transactions with predictable fees</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌍</div>
+                <h3>Global Reach</h3>
+                <p>Support multiple currencies and payment methods</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Analytics</h3>
+                <p>Real-time insights and comprehensive reporting</p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Display user info
+        document.addEventListener('DOMContentLoaded', function() {
+            const userEmail = getUserEmail();
+            const userName = getUserName();
+            
+            if (userEmail) {
+                document.getElementById('user-email').textContent = '📧 ' + userEmail;
+            }
+            if (userName) {
+                document.getElementById('user-name').textContent = '👤 ' + userName;
+            }
+        });
+    </script>
+</body>
+</html>

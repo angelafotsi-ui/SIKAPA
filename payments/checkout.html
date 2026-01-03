@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Sikapa</title>
+    <link rel="stylesheet" href="../css/checkout.css">
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <h1>Complete Your Payment</h1>
+            <p>Secure payment powered by Stripe</p>
+        </div>
+
+        <div class="checkout-content">
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h2>Order Summary</h2>
+                <div class="order-item">
+                    <span>Sikapa Premium Access</span>
+                    <span id="amount">$99.00</span>
+                </div>
+                <div class="order-divider"></div>
+                <div class="order-total">
+                    <span>Total</span>
+                    <span id="total">$99.00</span>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <form id="payment-form" class="payment-form">
+                <!-- Email Field -->
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="your@email.com" required>
+                </div>
+
+                <!-- Name Field -->
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" placeholder="John Doe" required>
+                </div>
+
+                <!-- Card Element -->
+                <div class="form-group">
+                    <label for="card-element">Card Details</label>
+                    <div id="card-element" class="card-element"></div>
+                    <div id="card-errors" class="card-errors"></div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submit-button" class="submit-button">
+                    Pay $99.00
+                </button>
+
+                <div id="payment-status" class="payment-status"></div>
+            </form>
+
+            <!-- Security Info -->
+            <div class="security-info">
+                <p>🔒 Your payment information is secure and encrypted</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js"></script>
+
+    <!-- Stripe -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <!-- Firebase Config -->
+    <script src="../firebase/config.js"></script>
+
+    <!-- Payment Handler -->
+    <script src="../payments/payment-handler.js"></script>
+
+    <!-- Checkout Logic -->
+    <script src="../js/checkout.js"></script>
+</body>
+</html>
