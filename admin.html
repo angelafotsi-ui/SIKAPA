@@ -55,6 +55,13 @@
             position: fixed;
             height: 100vh;
             overflow-y: auto;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
         }
 
         .sidebar h2 {
@@ -93,6 +100,11 @@
             margin-left: 250px;
             flex: 1;
             padding: 30px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.sidebar-hidden {
+            margin-left: 0;
         }
 
         .top-bar {
@@ -104,6 +116,46 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .burger-menu {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .burger-menu:hover {
+            background: #f0f0f0;
+        }
+
+        .burger-menu span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        .burger-menu.active span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+
+        .burger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .burger-menu.active span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
         }
 
         .top-bar h1 {
@@ -393,24 +445,45 @@
 
         @media (max-width: 768px) {
             .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
             }
 
             .main-content {
                 margin-left: 0;
             }
 
-            .sidebar-menu {
-                display: flex;
-                flex-wrap: wrap;
+            .main-content.sidebar-shown {
+                margin-left: 250px;
+            }
+
+            .top-bar {
+                padding: 10px 15px;
+            }
+
+            .top-bar-left {
                 gap: 10px;
             }
 
+            .burger-menu {
+                display: flex;
+            }
+
+            .top-bar h1 {
+                font-size: 20px;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+            }
+
             .sidebar-menu li {
-                flex: 1;
-                min-width: 150px;
+                margin-bottom: 5px;
             }
 
             .stats-grid {
@@ -422,7 +495,17 @@
             }
 
             th, td {
-                padding: 10px;
+                padding: 8px 5px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .btn {
+                padding: 5px 8px;
+                font-size: 11px;
             }
         }
     </style>
@@ -445,7 +528,14 @@
         <div class="main-content">
             <!-- Top Bar -->
             <div class="top-bar">
-                <h1 id="section-title">Dashboard</h1>
+                <div class="top-bar-left">
+                    <div class="burger-menu" id="burgerMenu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <h1 id="section-title">Dashboard</h1>
+                </div>
                 <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
             </div>
 
@@ -569,6 +659,9 @@
         });
 
         function setupEventListeners() {
+            // Burger menu toggle
+            document.getElementById('burgerMenu').addEventListener('click', toggleSidebar);
+
             // Menu buttons
             document.querySelectorAll('.menu-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -585,6 +678,33 @@
             document.getElementById('cashout-filter').addEventListener('change', function() {
                 loadCashouts(this.value);
             });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const burgerMenu = document.getElementById('burgerMenu');
+
+            sidebar.classList.toggle('show');
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('sidebar-shown');
+            burgerMenu.classList.toggle('active');
+
+            // Close sidebar when clicking outside on mobile
+            if (window.innerWidth <= 768 && sidebar.classList.contains('show')) {
+                document.addEventListener('click', closeSidebarOnClickOutside);
+            } else {
+                document.removeEventListener('click', closeSidebarOnClickOutside);
+            }
+        }
+
+        function closeSidebarOnClickOutside(event) {
+            const sidebar = document.querySelector('.sidebar');
+            const burgerMenu = document.getElementById('burgerMenu');
+
+            if (!sidebar.contains(event.target) && !burgerMenu.contains(event.target)) {
+                toggleSidebar();
+            }
         }
 
         function switchSection(section) {
@@ -615,6 +735,21 @@
             else if (section === 'cashouts') loadCashouts();
             else if (section === 'users') loadUsers();
             else if (section === 'transactions') loadTransactions();
+
+            // Close sidebar on mobile after selecting a section
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.sidebar');
+                const mainContent = document.querySelector('.main-content');
+                const burgerMenu = document.getElementById('burgerMenu');
+
+                if (sidebar.classList.contains('show')) {
+                    sidebar.classList.remove('show');
+                    sidebar.classList.add('hidden');
+                    mainContent.classList.remove('sidebar-shown');
+                    burgerMenu.classList.remove('active');
+                    document.removeEventListener('click', closeSidebarOnClickOutside);
+                }
+            }
         }
 
         async function loadDashboardData() {
