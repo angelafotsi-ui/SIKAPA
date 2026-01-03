@@ -686,7 +686,7 @@
                                                 <button class="btn btn-approve" onclick="updateStatus('withdraw', '${req.userId}', 'approved')">Approve</button>
                                                 <button class="btn btn-reject" onclick="updateStatus('withdraw', '${req.userId}', 'rejected')">Reject</button>
                                             ` : ''}
-                                            <button class="btn btn-delete" onclick="deleteRequest('withdraw', '${req.userId}', '${req.userEmail}')">Delete</button>
+                                            <button class="btn btn-delete" onclick="deleteRequest('withdraw', '${req.userId}', '${req.userEmail}', '${req.createdAt}')">Delete</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -750,7 +750,7 @@
                                                 <button class="btn btn-approve" onclick="updateStatus('cashout', '${req.userId}', 'approved')">Approve</button>
                                                 <button class="btn btn-reject" onclick="updateStatus('cashout', '${req.userId}', 'rejected')">Reject</button>
                                             ` : ''}
-                                            <button class="btn btn-delete" onclick="deleteRequest('cashout', '${req.userId}', '${req.userEmail}')">Delete</button>
+                                            <button class="btn btn-delete" onclick="deleteRequest('cashout', '${req.userId}', '${req.userEmail}', '${req.createdAt}')">Delete</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -900,15 +900,15 @@
             }
         }
 
-        async function deleteRequest(type, userId, userEmail) {
+        async function deleteRequest(type, userId, userEmail, createdAt) {
             if (!confirm(`⚠️ Are you sure you want to permanently delete this request?\n\nUser: ${userEmail}\nThis action cannot be undone!`)) {
                 return;
             }
 
             try {
                 const endpoint = type === 'withdraw' 
-                    ? `/api/withdraw/delete/${userId}` 
-                    : `/api/cashout/delete/${userId}`;
+                    ? `/api/withdraw/delete/${userId}/${encodeURIComponent(createdAt)}` 
+                    : `/api/cashout/delete/${userId}/${encodeURIComponent(createdAt)}`;
 
                 const response = await fetch(endpoint, {
                     method: 'DELETE',

@@ -163,9 +163,10 @@ router.get('/requests', (req, res) => {
 });
 
 // Delete cashout request endpoint
-router.delete('/delete/:userId', (req, res) => {
+router.delete('/delete/:userId/:createdAt', (req, res) => {
     try {
-        const { userId } = req.params;
+        const { userId, createdAt } = req.params;
+        const decodedCreatedAt = decodeURIComponent(createdAt);
         const logFile = path.join(__dirname, '../logs/cashout_requests.json');
 
         if (!fs.existsSync(logFile)) {
@@ -176,14 +177,16 @@ router.delete('/delete/:userId', (req, res) => {
         }
 
         let requests = JSON.parse(fs.readFileSync(logFile, 'utf8'));
-        const requestToDelete = requests.find(r => r.userId === userId);
+        const requestIndex = requests.findIndex(r => r.userId === userId && r.createdAt === decodedCreatedAt);
 
-        if (!requestToDelete) {
+        if (requestIndex === -1) {
             return res.status(404).json({
                 success: false,
                 message: 'Cashout request not found'
             });
         }
+
+        const requestToDelete = requests[requestIndex];
 
         // Delete the screenshot file if it exists
         if (requestToDelete.screenshotPath) {
@@ -199,7 +202,7 @@ router.delete('/delete/:userId', (req, res) => {
         }
 
         // Remove request from array
-        requests = requests.filter(r => r.userId !== userId);
+        requests.splice(requestIndex, 1);
         
         // Save updated requests back to file
         fs.writeFileSync(logFile, JSON.stringify(requests, null, 2));
@@ -207,7 +210,8 @@ router.delete('/delete/:userId', (req, res) => {
         console.log('[Cashout] Request deleted:', {
             userId,
             userEmail: requestToDelete.userEmail,
-            amount: requestToDelete.amount
+            amount: requestToDelete.amount,
+            createdAt: decodedCreatedAt
         });
 
         res.json({
