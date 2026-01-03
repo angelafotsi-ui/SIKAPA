@@ -6,6 +6,10 @@ const path = require('path');
 // Cashout request endpoint
 router.post('/request', (req, res) => {
     try {
+        // Debug: Log all request properties
+        console.log('[Cashout] req.body keys:', Object.keys(req.body || {}));
+        console.log('[Cashout] req.files keys:', Object.keys(req.files || {}));
+        
         // Parse fields from req.body for FormData with file uploads
         // express-fileupload parses fields from FormData automatically
         let tokenId = req.body?.tokenId;
@@ -18,6 +22,7 @@ router.post('/request', (req, res) => {
         // Debug log
         console.log('[Cashout] Received body:', { tokenId, secretCode, walletId, amount, userEmail, userId });
         console.log('[Cashout] Full req.body:', req.body);
+        console.log('[Cashout] secretCode value:', secretCode, 'type:', typeof secretCode, 'is truthy:', !!secretCode);
 
         // Validation
         if (!tokenId || !secretCode || !walletId || !amount || !userEmail) {

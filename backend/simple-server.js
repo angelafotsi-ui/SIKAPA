@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fileUpload = require('express-fileupload');
 require('dotenv').config();
 
 const app = express();
@@ -8,6 +9,11 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use(fileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max file size
+    useTempFiles: true,
+    tempFileDir: path.join(__dirname, '../temp/')
+}));
 
 // Serve static files from parent directory
 app.use(express.static(path.join(__dirname, '..')));
