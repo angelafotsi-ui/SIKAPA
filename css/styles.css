@@ -57,15 +57,43 @@ body {
 }
 
 .auth-link {
+    padding: 0;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.auth-button {
     padding: 0.5rem 1rem;
     background: rgba(255,255,255,0.2);
     border-radius: 5px;
     cursor: pointer;
     transition: background 0.3s;
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.95rem;
 }
 
-.auth-link:hover {
+.auth-button:hover {
     background: rgba(255,255,255,0.3);
+    text-decoration: none;
+}
+
+.auth-button.admin-button {
+    background: rgba(76, 175, 80, 0.6);
+}
+
+.auth-button.admin-button:hover {
+    background: rgba(76, 175, 80, 0.8);
+}
+
+.auth-button.logout-button {
+    background: rgba(255, 152, 0, 0.6);
+}
+
+.auth-button.logout-button:hover {
+    background: rgba(255, 152, 0, 0.8);
 }
 
 /* Hero Section */

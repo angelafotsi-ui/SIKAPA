@@ -65,12 +65,14 @@ function updateAuthUI() {
     displayName = displayName.split(' ')[0];
     
     let authHTML = '';
+    
     // Add Admin Dashboard button if user is admin
     if (isUserAdmin()) {
-      authHTML += '<a href="admin.html" style="margin-right: 15px;">📊 Admin Dashboard</a>';
+      authHTML += `<a href="admin.html" class="auth-button admin-button">📊 Admin Dashboard</a>`;
     }
+    
     // Add logout button
-    authHTML += `<a href="#" onclick="logoutUser(); return false;">Logout (${displayName})</a>`;
+    authHTML += `<a href="#" onclick="logoutUser(); return false;" class="auth-button logout-button">Logout (${displayName})</a>`;
     
     authLinks.forEach(link => {
       link.innerHTML = authHTML;
