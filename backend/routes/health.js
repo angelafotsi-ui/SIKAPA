@@ -6,7 +6,7 @@ const router = express.Router();
  * @desc    Health check endpoint
  * @access  Public
  */
-router.get('/health', (req, res) => {
+router.get('/', (req, res) => {
   res.json({
     status: 'ok',
     message: 'Sikapa API is running',

@@ -10,16 +10,26 @@ const serviceAccountPath = path.join(__dirname, '../backendserviceAccountKey.jso
 
 let serviceAccount;
 
-// Check if we should use Base64 encoded key from environment
-if (process.env.FIREBASE_PRIVATE_KEY_BASE64 && process.env.FIREBASE_PROJECT_ID) {
-  console.log('[Firebase] Using Base64 encoded private key from environment');
+// Check if we should use credentials from environment variables
+if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_PROJECT_ID) {
+  console.log('[Firebase] Using private key from environment variables');
   try {
-    const privateKeyDecoded = Buffer.from(process.env.FIREBASE_PRIVATE_KEY_BASE64, 'base64').toString('utf8');
+    // Parse the private key - handle both escaped and unescaped formats
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    
+    // If wrapped in quotes, remove them
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      privateKey = privateKey.slice(1, -1);
+    }
+    
+    // Replace escaped newlines with actual newlines
+    privateKey = privateKey.replace(/\\n/g, '\n');
+    
     serviceAccount = {
       type: 'service_account',
       project_id: process.env.FIREBASE_PROJECT_ID,
       private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID || 'key-id',
-      private_key: privateKeyDecoded,
+      private_key: privateKey,
       client_email: process.env.FIREBASE_CLIENT_EMAIL,
       client_id: process.env.FIREBASE_CLIENT_ID || 'client-id',
       auth_uri: 'https://accounts.google.com/o/oauth2/auth',
@@ -27,10 +37,10 @@ if (process.env.FIREBASE_PRIVATE_KEY_BASE64 && process.env.FIREBASE_PROJECT_ID) 
       auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
       client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.FIREBASE_CLIENT_EMAIL}`
     };
-    console.log('✓ Service account created from Base64 encoded key');
+    console.log('✓ Service account created from environment variables');
     console.log('[Firebase] Service account project_id:', serviceAccount.project_id);
   } catch (err) {
-    console.error('❌ Failed to decode Base64 key:', err.message);
+    console.error('❌ Failed to load private key from environment:', err.message);
     process.exit(1);
   }
 } else if (fs.existsSync(serviceAccountPath)) {
