@@ -2,7 +2,11 @@
 
 // Check if user is logged in
 function isUserLoggedIn() {
-  return localStorage.getItem('user_email') !== null && localStorage.getItem('auth_token') !== null;
+  const userEmail = localStorage.getItem('user_email');
+  const authToken = localStorage.getItem('auth_token');
+  const isLoggedIn = userEmail !== null && authToken !== null;
+  console.log('[Auth] isUserLoggedIn check:', { userEmail, hasToken: authToken !== null, isLoggedIn });
+  return isLoggedIn;
 }
 
 // Get logged in user info

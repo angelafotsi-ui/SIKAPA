@@ -135,7 +135,7 @@ exports.login = async (req, res, next) => {
       uid: userRecord.uid,
       email: userRecord.email,
       displayName: userRecord.displayName,
-      token: customToken
+      customToken: customToken
     });
   } catch (error) {
     console.error('[Login] Error:', error);
