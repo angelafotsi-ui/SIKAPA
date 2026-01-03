@@ -1,18 +1,47 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+require('dotenv').config();
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/api/health', (req, res) => {
-  console.log('Health endpoint hit');
-  res.json({
-    status: 'ok',
-    message: 'Sikapa API is running',
-    timestamp: new Date().toISOString()
+// Serve static files from parent directory
+app.use(express.static(path.join(__dirname, '..')));
+
+// Import routes
+try {
+  const authRoutes = require('./routes/auth');
+  const paymentRoutes = require('./routes/payments');
+  const withdrawRoutes = require('./routes/withdraw');
+  const cashoutRoutes = require('./routes/cashout');
+  const adminRoutes = require('./routes/admin');
+  const healthRoutes = require('./routes/health');
+
+  // Use routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api/payments', paymentRoutes);
+  app.use('/api/withdraw', withdrawRoutes);
+  app.use('/api/cashout', cashoutRoutes);
+  app.use('/api/admin', adminRoutes);
+  app.use('/api/health', healthRoutes);
+} catch (e) {
+  console.error('Error loading routes:', e.message);
+}
+
+// Root endpoint - serve index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
+// Fallback 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not found',
+    message: `${req.method} ${req.path} not found`
   });
 });
 
