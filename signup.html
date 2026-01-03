@@ -78,7 +78,11 @@
             }
 
             try {
-                const response = await fetch('http://localhost:3000/api/auth/signup', {
+                const apiBase = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:3000/api'
+                    : 'https://sikapa-bwxu.onrender.com/api';
+                
+                const response = await fetch(`${apiBase}/auth/signup`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
