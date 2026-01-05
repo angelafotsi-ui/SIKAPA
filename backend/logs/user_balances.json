@@ -7,5 +7,23 @@
     "lastUpdated": "2026-01-05T15:01:52.500Z",
     "bonus": 10,
     "bonusGivenAt": "2026-01-05T15:01:52.500Z"
+  },
+  {
+    "userId": "test-user-1767627188515",
+    "balance": 50,
+    "currency": "GHS",
+    "createdAt": "2026-01-05T15:33:08.537Z",
+    "transactions": [
+      {
+        "type": "add",
+        "amount": 50,
+        "reason": "Test add funds",
+        "adminEmail": "admin@test.com",
+        "timestamp": "2026-01-05T15:33:08.537Z",
+        "previousBalance": 0,
+        "newBalance": 50
+      }
+    ],
+    "lastUpdated": "2026-01-05T15:33:08.537Z"
   }
 ]

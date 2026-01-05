@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Balance Add</title>
+</head>
+<body>
+    <h1>Testing /api/balance/add Endpoint</h1>
+    <button onclick="testAddFunds()">Test Add Funds</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAddFunds() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const endpoint = 'http://localhost:3000/api/balance/add';
+                const payload = {
+                    userId: 'test-user-' + Date.now(),
+                    amount: 50,
+                    reason: 'Test add funds',
+                    adminEmail: 'admin@test.com'
+                };
+                
+                console.log('[Test] Calling:', endpoint);
+                console.log('[Test] Payload:', payload);
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log('[Test] Response status:', response.status);
+                const text = await response.text();
+                console.log('[Test] Response text:', text);
+                
+                resultDiv.innerHTML = `<p>Status: ${response.status}</p>`;
+                resultDiv.innerHTML += `<p>Response: <pre>${text}</pre></p>`;
+                
+                if (text.startsWith('{')) {
+                    const data = JSON.parse(text);
+                    if (data.success) {
+                        resultDiv.innerHTML += `<p><strong>✓ Success!</strong> New balance: GH ${data.newBalance}</p>`;
+                    } else {
+                        resultDiv.innerHTML += `<p><strong>✗ Failed:</strong> ${data.message}</p>`;
+                    }
+                }
+            } catch (error) {
+                console.error('[Test] Error:', error);
+                resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
