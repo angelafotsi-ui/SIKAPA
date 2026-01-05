@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Fund Endpoint</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .section { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Fund Endpoint Debug</h1>
+    
+    <div class="section">
+        <h2>Environment Info</h2>
+        <pre id="envInfo"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Fund Status Check</h2>
+        <button onclick="checkStatus()">Check /api/fund/status</button>
+        <pre id="statusResult"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Test Fund Update</h2>
+        <button onclick="testFund('add')">Test Add Funds</button>
+        <button onclick="testFund('deduct')">Test Deduct Funds</button>
+        <pre id="fundResult"></pre>
+    </div>
+
+    <script>
+        function getApiBase() {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:3000/api';
+            }
+            return 'https://sikapa-bwxu.onrender.com/api';
+        }
+
+        // Display environment info
+        document.getElementById('envInfo').textContent = 
+            'Hostname: ' + window.location.hostname + '\n' +
+            'Port: ' + window.location.port + '\n' +
+            'URL: ' + window.location.href + '\n' +
+            'API Base: ' + getApiBase();
+
+        async function checkStatus() {
+            const resultDiv = document.getElementById('statusResult');
+            resultDiv.textContent = 'Checking...';
+            
+            try {
+                const endpoint = getApiBase() + '/fund/status';
+                console.log('[Debug] Checking endpoint:', endpoint);
+                resultDiv.textContent = 'Calling: ' + endpoint + '\n\n';
+                
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const text = await response.text();
+                resultDiv.textContent += 'Status: ' + response.status + '\n\n' + text;
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message + '\n' + error.stack;
+            }
+        }
+
+        async function testFund(action) {
+            const resultDiv = document.getElementById('fundResult');
+            resultDiv.textContent = 'Testing ' + action + '...';
+            
+            try {
+                const endpoint = getApiBase() + '/fund/update';
+                const payload = {
+                    userId: 'debug-' + Date.now(),
+                    action: action,
+                    amount: 25,
+                    reason: 'Debug test',
+                    adminEmail: 'debug@test.com'
+                };
+                
+                console.log('[Debug] Calling:', endpoint);
+                console.log('[Debug] Payload:', payload);
+                resultDiv.textContent = 'Endpoint: ' + endpoint + '\n\nPayload:\n' + JSON.stringify(payload, null, 2) + '\n\n';
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const text = await response.text();
+                resultDiv.textContent += 'Status: ' + response.status + '\n\n' + text;
+            } catch (error) {
+                resultDiv.textContent += 'Error: ' + error.message + '\n' + error.stack;
+            }
+        }
+    </script>
+</body>
+</html>

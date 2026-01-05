@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Fund Test</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+        .box { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #5568d3; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 4px; overflow-x: auto; }
+        .success { color: #27ae60; }
+        .error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <h1>Fund Endpoint Test</h1>
+    
+    <div class="box">
+        <h2>Test Configuration</h2>
+        <p><strong>User ID:</strong> <input type="text" id="userId" value="test-user-123" /></p>
+        <p><strong>Amount:</strong> <input type="number" id="amount" value="50" /></p>
+        <p><strong>Action:</strong> 
+            <select id="action">
+                <option value="add">Add</option>
+                <option value="deduct">Deduct</option>
+            </select>
+        </p>
+    </div>
+
+    <div class="box">
+        <h2>Test Fund Update Endpoint</h2>
+        <button onclick="testFundUpdate()">POST to /api/fund/update</button>
+        <pre id="result"></pre>
+    </div>
+
+    <script>
+        async function testFundUpdate() {
+            const resultEl = document.getElementById('result');
+            const userId = document.getElementById('userId').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const action = document.getElementById('action').value;
+
+            try {
+                resultEl.innerHTML = '<span class="error">Sending request...</span>';
+
+                const payload = {
+                    userId: userId,
+                    action: action,
+                    amount: amount,
+                    reason: 'Test from HTML page',
+                    adminEmail: 'test@admin.com'
+                };
+
+                console.log('[Test] Calling: http://localhost:3000/api/fund/update');
+                console.log('[Test] Payload:', payload);
+
+                const response = await fetch('http://localhost:3000/api/fund/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                let text = await response.text();
+                let data = null;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    data = text;
+                }
+
+                console.log('[Test] Response Status:', response.status);
+                console.log('[Test] Response Data:', data);
+
+                if (response.ok) {
+                    resultEl.innerHTML = '<span class="success">✓ SUCCESS (Status ' + response.status + ')</span>\n\n' + 
+                        JSON.stringify(data, null, 2);
+                } else {
+                    resultEl.innerHTML = '<span class="error">✗ ERROR (Status ' + response.status + ')</span>\n\n' + 
+                        (typeof data === 'object' ? JSON.stringify(data, null, 2) : text);
+                }
+            } catch (error) {
+                resultEl.innerHTML = '<span class="error">✗ EXCEPTION: ' + error.message + '</span>';
+                console.error('[Test] Exception:', error);
+            }
+        }
+    </script>
+</body>
+</html>

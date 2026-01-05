@@ -3,6 +3,8 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
+console.log('[Fund Routes] Module loaded - setting up fund endpoints');
+
 // User balances file
 const BALANCES_FILE = path.join(__dirname, '../logs/user_balances.json');
 
