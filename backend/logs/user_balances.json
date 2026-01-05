@@ -25,5 +25,41 @@
       }
     ],
     "lastUpdated": "2026-01-05T15:33:08.537Z"
+  },
+  {
+    "userId": "test-user-1767627927035",
+    "balance": 50,
+    "currency": "GHS",
+    "createdAt": "2026-01-05T15:45:27.054Z",
+    "transactions": [
+      {
+        "type": "add",
+        "amount": 50,
+        "reason": "Test add funds",
+        "adminEmail": "admin@test.com",
+        "timestamp": "2026-01-05T15:45:27.055Z",
+        "previousBalance": 0,
+        "newBalance": 50
+      }
+    ],
+    "lastUpdated": "2026-01-05T15:45:27.055Z"
+  },
+  {
+    "userId": "test-user-1767627933802",
+    "balance": 0,
+    "currency": "GHS",
+    "createdAt": "2026-01-05T15:45:34.109Z",
+    "transactions": [
+      {
+        "type": "deduct",
+        "amount": 50,
+        "reason": "Test deduct funds",
+        "adminEmail": "admin@test.com",
+        "timestamp": "2026-01-05T15:45:34.110Z",
+        "previousBalance": 0,
+        "newBalance": 0
+      }
+    ],
+    "lastUpdated": "2026-01-05T15:45:34.110Z"
   }
 ]

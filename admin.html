@@ -1125,10 +1125,11 @@
             try {
                 // Construct proper API URL with hostname detection
                 const apiBase = getApiBase();
-                const endpoint = action === 'add' ? `${apiBase}/balance/add` : `${apiBase}/balance/deduct`;
+                // Use the new fund endpoint instead of balance/add
+                const endpoint = `${apiBase}/fund/update`;
                 
                 console.log('[Admin Fund] Submitting to endpoint:', endpoint);
-                console.log('[Admin Fund] Payload:', { userId, amount, reason, adminEmail: localStorage.getItem('userEmail') });
+                console.log('[Admin Fund] Payload:', { userId, action, amount, reason, adminEmail: localStorage.getItem('userEmail') });
                 
                 const response = await fetch(endpoint, {
                     method: 'POST',
@@ -1138,6 +1139,7 @@
                     },
                     body: JSON.stringify({
                         userId: userId,
+                        action: action,
                         amount: amount,
                         reason: reason,
                         adminEmail: localStorage.getItem('userEmail') || localStorage.getItem('user_email')

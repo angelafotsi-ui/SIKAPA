@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Fund Endpoint</title>
+</head>
+<body>
+    <h1>Testing /api/fund/update Endpoint</h1>
+    
+    <div>
+        <h2>Add Funds</h2>
+        <button onclick="testFund('add')">Test Add Funds</button>
+    </div>
+    
+    <div>
+        <h2>Deduct Funds</h2>
+        <button onclick="testFund('deduct')">Test Deduct Funds</button>
+    </div>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testFund(action) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing ' + action + '...</p>';
+            
+            try {
+                const endpoint = 'http://localhost:3000/api/fund/update';
+                const userId = 'test-user-' + Date.now();
+                const payload = {
+                    userId: userId,
+                    action: action,
+                    amount: 50,
+                    reason: 'Test ' + action + ' funds',
+                    adminEmail: 'admin@test.com'
+                };
+                
+                console.log('[Test Fund] Action:', action);
+                console.log('[Test Fund] Endpoint:', endpoint);
+                console.log('[Test Fund] Payload:', payload);
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log('[Test Fund] Response status:', response.status);
+                const text = await response.text();
+                console.log('[Test Fund] Response text:', text);
+                
+                resultDiv.innerHTML = `<p><strong>Status: ${response.status}</strong></p>`;
+                resultDiv.innerHTML += `<p>Response: <pre>${text}</pre></p>`;
+                
+                if (text.startsWith('{')) {
+                    const data = JSON.parse(text);
+                    if (data.success) {
+                        resultDiv.innerHTML += `<p><strong style="color: green;">✓ Success!</strong></p>`;
+                        resultDiv.innerHTML += `<p>New Balance: GH ${data.newBalance}</p>`;
+                        resultDiv.innerHTML += `<p>Message: ${data.message}</p>`;
+                    } else {
+                        resultDiv.innerHTML += `<p><strong style="color: red;">✗ Failed:</strong> ${data.message}</p>`;
+                    }
+                }
+            } catch (error) {
+                console.error('[Test Fund] Error:', error);
+                resultDiv.innerHTML = `<p><strong style="color: red;">Error:</strong> ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

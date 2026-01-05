@@ -82,12 +82,14 @@ const withdrawRoutes = require('./routes/withdraw');
 const adminRoutes = require('./routes/admin');
 const transactionRoutes = require('./routes/transactions');
 const balanceRoutes = require('./routes/balance');
+const fundRoutes = require('./routes/fund');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/debug', debugRoutes);
 app.use('/api/cashout', cashoutRoutes);
 app.use('/api/withdraw', withdrawRoutes);
+app.use('/api/fund', fundRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/balance', balanceRoutes);
@@ -112,11 +114,18 @@ console.log('[5] Routes configured');
 
 // Handle 404 for API routes
 app.use('/api/', (req, res) => {
+  console.log('[404] Unmatched route request:');
+  console.log('[404] Method:', req.method);
+  console.log('[404] Path:', req.path);
+  console.log('[404] Full URL:', req.originalUrl);
+  console.log('[404] Headers:', JSON.stringify(req.headers, null, 2));
+  
   res.status(404).json({
     success: false,
     message: `API endpoint not found: ${req.method} ${req.path}`,
     method: req.method,
-    path: req.path
+    path: req.path,
+    originalUrl: req.originalUrl
   });
 });
 
