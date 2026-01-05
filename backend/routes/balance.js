@@ -16,20 +16,23 @@ function ensureBalancesFile() {
 }
 
 /**
- * Get all user balances
+ * Diagnostic endpoint to verify balance routes are loaded
  */
-function getAllBalances() {
-    ensureBalancesFile();
-    const data = fs.readFileSync(BALANCES_FILE, 'utf-8');
-    return JSON.parse(data || '[]');
-}
-
-/**
- * Save balances to file
- */
-function saveBalances(balances) {
-    fs.writeFileSync(BALANCES_FILE, JSON.stringify(balances, null, 2));
-}
+router.get('/status', (req, res) => {
+    res.json({
+        success: true,
+        status: 'Balance routes loaded',
+        endpoints: [
+            'GET /api/balance/user/:userId',
+            'POST /api/balance/init/:userId',
+            'POST /api/balance/ensure-initialized/:userId',
+            'POST /api/balance/add',
+            'POST /api/balance/deduct',
+            'GET /api/balance/all',
+            'GET /api/balance/history/:userId'
+        ]
+    });
+});
 
 /**
  * Get user balance
