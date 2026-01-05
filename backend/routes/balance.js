@@ -115,6 +115,60 @@ router.post('/init/:userId', (req, res) => {
 });
 
 /**
+ * Ensure user balance is initialized (called on first login)
+ * If balance doesn't exist, creates it with GH 10 bonus
+ */
+router.post('/ensure-initialized/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const balances = getAllBalances();
+
+        // Check if user already has a balance
+        const existingBalance = balances.find(b => b.userId === userId);
+        if (existingBalance) {
+            // User already has a balance, just return it
+            console.log(`[Balance] User ${userId} balance already exists with amount: GH ${existingBalance.balance}`);
+            return res.json({
+                success: true,
+                message: 'User balance already initialized',
+                balance: existingBalance.balance,
+                isNew: false
+            });
+        }
+
+        // Create new balance with GH 10 bonus for first-time login
+        const newBalance = {
+            userId: userId,
+            balance: 10.00,
+            currency: 'GHS',
+            createdAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+            bonus: 10.00,
+            bonusGivenAt: new Date().toISOString()
+        };
+
+        balances.push(newBalance);
+        saveBalances(balances);
+
+        console.log(`[Balance] Ensured initial balance for user ${userId} with GH 10 bonus on first login`);
+
+        res.json({
+            success: true,
+            message: 'User balance ensured with GH 10 welcome bonus',
+            balance: newBalance.balance,
+            userId: userId,
+            isNew: true
+        });
+    } catch (error) {
+        console.error('[Balance] Error ensuring balance initialization:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error ensuring balance initialization'
+        });
+    }
+});
+
+/**
  * Add funds to user account (admin only)
  */
 router.post('/add', (req, res) => {

@@ -112,7 +112,7 @@ console.log('[5] Routes configured');
 
 
 // Start server
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n✅ Sikapa Unified Server running on http://localhost:${PORT}`);
   console.log(`\n📍 Available at:`);
   console.log(`   🏠 Landing page: http://localhost:${PORT}`);
@@ -123,9 +123,29 @@ const server = app.listen(PORT, () => {
   console.log(`\n🔌 API Base: http://localhost:${PORT}/api\n`);
 });
 
+server.on('error', (err) => {
+  console.error('[ERROR] Server failed to start:', err.message);
+  console.error('[ERROR] Stack:', err.stack);
+});
+
 console.log('[6] Server started');
 
-// Keep process alive
-process.stdin.resume();
-
 console.log('[7] Ready for connections\n');
+
+// Test route to confirm server is responding  
+setTimeout(() => {
+  console.log('[TEST] Server is accepting connections');
+  
+  // Also verify port is actually listening
+  const net = require('net');
+  const socket = new net.Socket();
+  socket.setTimeout(2000);
+  socket.on('error', (err) => {
+    console.error('[TEST] Cannot connect to localhost:3000 -', err.message);
+  });
+  socket.on('connect', () => {
+    console.log('[TEST] ✓ Server successfully bound to port 3000');
+    socket.destroy();
+  });
+  socket.connect(PORT, '127.0.0.1');
+}, 500);

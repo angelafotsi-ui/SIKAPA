@@ -44,6 +44,36 @@
     <script>
         document.getElementById('login-form').addEventListener('submit', handleLogin);
 
+        async function ensureBalanceInitialized(userId) {
+            try {
+                const apiBase = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:3000/api'
+                    : 'https://sikapa-bwxu.onrender.com/api';
+                
+                const response = await fetch(`${apiBase}/balance/ensure-initialized/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log('[Login] Balance initialized/verified:', data.message);
+                    if (data.isNew) {
+                        console.log('[Login] New user received GH 10 welcome bonus');
+                    } else {
+                        console.log('[Login] Existing user balance verified');
+                    }
+                } else {
+                    console.error('[Login] Failed to ensure balance initialization:', data.message);
+                }
+            } catch (error) {
+                console.error('[Login] Error ensuring balance initialization:', error);
+                // Don't fail login if balance check fails
+            }
+        }
+
         async function handleLogin(e) {
             e.preventDefault();
 
@@ -73,11 +103,18 @@
                     statusDiv.innerHTML = '<div class="success">✓ Login successful! Redirecting...</div>';
                     // Store user info in localStorage
                     localStorage.setItem('user_uid', data.uid);
+                    localStorage.setItem('userId', data.uid);
                     localStorage.setItem('user_email', data.email);
+                    localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('user_name', data.displayName);
                     if (data.customToken) {
                         localStorage.setItem('auth_token', data.customToken);
+                        localStorage.setItem('authToken', data.customToken);
                     }
+                    
+                    // Ensure balance is initialized (for first-time login bonus)
+                    ensureBalanceInitialized(data.uid);
+                    
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 2000);

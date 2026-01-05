@@ -6,6 +6,14 @@
     <title>Admin Dashboard - SIKAPA</title>
     <script src="js/auth.js"></script>
     <script>
+        // Get proper API base URL
+        function getApiBase() {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:3000/api';
+            }
+            return 'https://sikapa-bwxu.onrender.com/api';
+        }
+
         // Admin authorization check
         function checkAdminAccess() {
             // Check if user is logged in
@@ -765,11 +773,12 @@
 
         async function loadDashboardData() {
             try {
+                const apiBase = getApiBase();
                 const [withdraws, cashouts, users, transactions] = await Promise.all([
-                    fetch('/api/withdraw/requests').then(r => r.json()),
-                    fetch('/api/cashout/requests').then(r => r.json()),
-                    fetch('/api/admin/users').then(r => r.json()),
-                    fetch('/api/admin/transactions').then(r => r.json())
+                    fetch(`${apiBase}/withdraw/requests`).then(r => r.json()),
+                    fetch(`${apiBase}/cashout/requests`).then(r => r.json()),
+                    fetch(`${apiBase}/admin/users`).then(r => r.json()),
+                    fetch(`${apiBase}/admin/transactions`).then(r => r.json())
                 ]);
 
                 const withdrawData = withdraws.requests || [];
@@ -790,7 +799,7 @@
 
         async function loadWithdrawals(filter = '') {
             try {
-                const response = await fetch('/api/withdraw/requests');
+                const response = await fetch(`${getApiBase()}/withdraw/requests`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -850,7 +859,7 @@
 
         async function loadCashouts(filter = '') {
             try {
-                const response = await fetch('/api/cashout/requests');
+                const response = await fetch(`${getApiBase()}/cashout/requests`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -914,9 +923,10 @@
 
         async function loadUsers() {
             try {
+                const apiBase = getApiBase();
                 const [usersResponse, balancesResponse] = await Promise.all([
-                    fetch('/api/admin/users'),
-                    fetch('/api/balance/all')
+                    fetch(`${apiBase}/admin/users`),
+                    fetch(`${apiBase}/balance/all`)
                 ]);
                 
                 const usersData = await usersResponse.json();
@@ -1105,22 +1115,30 @@
             statusDiv.innerHTML = '<div style="color: #667eea;">Processing...</div>';
 
             try {
-                const endpoint = action === 'add' ? '/api/balance/add' : '/api/balance/deduct';
+                // Construct proper API URL with hostname detection
+                const apiBase = getApiBase();
+                const endpoint = action === 'add' ? `${apiBase}/balance/add` : `${apiBase}/balance/deduct`;
+                
+                console.log('[Admin Fund] Submitting to endpoint:', endpoint);
+                console.log('[Admin Fund] Payload:', { userId, amount, reason, adminEmail: localStorage.getItem('userEmail') });
+                
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
+                        'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || localStorage.getItem('auth_token')),
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         userId: userId,
                         amount: amount,
                         reason: reason,
-                        adminEmail: localStorage.getItem('userEmail')
+                        adminEmail: localStorage.getItem('userEmail') || localStorage.getItem('user_email')
                     })
                 });
 
+                console.log('[Admin Fund] Response status:', response.status);
                 const data = await response.json();
+                console.log('[Admin Fund] Response data:', data);
 
                 if (response.ok && data.success) {
                     statusDiv.innerHTML = `<div style="color: #27ae60; font-weight: 600;">✓ ${data.message}</div>`;
@@ -1132,16 +1150,17 @@
                     statusDiv.innerHTML = `<div style="color: #e74c3c; font-weight: 600;">Error: ${data.message || 'Failed to update balance'}</div>`;
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('[Admin Fund] Error:', error);
                 statusDiv.innerHTML = `<div style="color: #e74c3c; font-weight: 600;">Error: ${error.message}</div>`;
             }
         }
 
         async function loadTransactions() {
             try {
+                const apiBase = getApiBase();
                 const [withdraws, cashouts] = await Promise.all([
-                    fetch('/api/withdraw/requests').then(r => r.json()),
-                    fetch('/api/cashout/requests').then(r => r.json())
+                    fetch(`${apiBase}/withdraw/requests`).then(r => r.json()),
+                    fetch(`${apiBase}/cashout/requests`).then(r => r.json())
                 ]);
 
                 const withdrawData = (withdraws.requests || []).map(w => ({
@@ -1223,7 +1242,7 @@
         async function updateStatus(type, userId, createdAt, status) {
             if (confirm(`Are you sure you want to ${status} this request?`)) {
                 try {
-                    const response = await fetch('/api/transactions/update-status', {
+                    const response = await fetch(`${getApiBase()}/transactions/update-status`, {
                         method: 'POST',
                         headers: {
                             'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
