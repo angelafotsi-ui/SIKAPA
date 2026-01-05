@@ -1,15 +1,19 @@
-let { auth } = require('../config/firebase');
+const firebaseConfig = require('../config/firebase');
 const fetch = require('node-fetch');
+
+/**
+ * Get auth - lazy load to ensure Firebase is initialized
+ */
+function getAuth() {
+  return firebaseConfig.auth;
+}
 
 /**
  * Sign up user
  */
 exports.signup = async (req, res, next) => {
   try {
-    // Re-require auth in case it wasn't initialized
-    if (!auth) {
-      auth = require('../config/firebase').auth;
-    }
+    const auth = getAuth();
     
     if (!auth) {
       console.error('[Signup] CRITICAL: Firebase auth is undefined');
@@ -102,6 +106,7 @@ exports.signup = async (req, res, next) => {
  */
 exports.login = async (req, res, next) => {
   try {
+    const auth = getAuth();
     const { email, password } = req.body;
 
     console.log('[Login] Received login request:', { email });
@@ -168,6 +173,7 @@ exports.login = async (req, res, next) => {
  */
 exports.getUser = async (req, res, next) => {
   try {
+    const auth = getAuth();
     const { uid } = req.params;
 
     if (!uid) {
