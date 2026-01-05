@@ -121,6 +121,7 @@ router.post('/init/:userId', (req, res) => {
 router.post('/ensure-initialized/:userId', (req, res) => {
     try {
         const { userId } = req.params;
+        console.log(`[Balance] ensure-initialized called for userId: ${userId}`);
         const balances = getAllBalances();
 
         // Check if user already has a balance
@@ -128,6 +129,7 @@ router.post('/ensure-initialized/:userId', (req, res) => {
         if (existingBalance) {
             // User already has a balance, just return it
             console.log(`[Balance] User ${userId} balance already exists with amount: GH ${existingBalance.balance}`);
+            res.set('Content-Type', 'application/json');
             return res.json({
                 success: true,
                 message: 'User balance already initialized',
@@ -152,6 +154,7 @@ router.post('/ensure-initialized/:userId', (req, res) => {
 
         console.log(`[Balance] Ensured initial balance for user ${userId} with GH 10 bonus on first login`);
 
+        res.set('Content-Type', 'application/json');
         res.json({
             success: true,
             message: 'User balance ensured with GH 10 welcome bonus',
@@ -161,9 +164,11 @@ router.post('/ensure-initialized/:userId', (req, res) => {
         });
     } catch (error) {
         console.error('[Balance] Error ensuring balance initialization:', error);
+        res.set('Content-Type', 'application/json');
         res.status(500).json({
             success: false,
-            message: 'Error ensuring balance initialization'
+            message: 'Error ensuring balance initialization',
+            error: error.message
         });
     }
 });
