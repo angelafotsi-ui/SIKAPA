@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fund Endpoint Full Test</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+        .box { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #667eea; }
+        .box h2 { margin-top: 0; color: #333; }
+        button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #5568d3; }
+        input { padding: 8px; margin: 5px; }
+        select { padding: 8px; margin: 5px; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        .success { color: #27ae60; font-weight: bold; }
+        .error { color: #e74c3c; font-weight: bold; }
+        .info { color: #3498db; }
+        .warning { color: #f39c12; }
+        .tabs { margin: 20px 0; }
+        .tab-button { padding: 10px 15px; background: #ecf0f1; border: 1px solid #bdc3c7; cursor: pointer; }
+        .tab-button.active { background: #667eea; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <h1>Fund Endpoint - Complete Diagnostic</h1>
+    
+    <div class="box">
+        <h2>Environment Information</h2>
+        <pre id="envInfo"></pre>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('localhost')">Localhost Test (3000)</button>
+        <button class="tab-button" onclick="switchTab('production')">Production Test (Render)</button>
+        <button class="tab-button" onclick="switchTab('logs')">Request Logs</button>
+    </div>
+
+    <div id="localhost" class="tab-content active">
+        <div class="box">
+            <h2>Test Localhost Server</h2>
+            <p><strong>URL:</strong> http://localhost:3000/api/fund/update</p>
+            <button onclick="testLocalhost('add')">➕ Test Add (Localhost)</button>
+            <button onclick="testLocalhost('deduct')">➖ Test Deduct (Localhost)</button>
+            <pre id="localhostResult"></pre>
+        </div>
+    </div>
+
+    <div id="production" class="tab-content">
+        <div class="box">
+            <h2>Test Production Server</h2>
+            <p><strong>URL:</strong> https://sikapa-bwxu.onrender.com/api/fund/update</p>
+            <button onclick="testProduction('add')">➕ Test Add (Production)</button>
+            <button onclick="testProduction('deduct')">➖ Test Deduct (Production)</button>
+            <pre id="productionResult"></pre>
+        </div>
+    </div>
+
+    <div id="logs" class="tab-content">
+        <div class="box">
+            <h2>Request Log</h2>
+            <button onclick="clearLogs()">Clear Logs</button>
+            <pre id="logOutput"></pre>
+        </div>
+    </div>
+
+    <script>
+        let logs = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] [${type.toUpperCase()}] ${message}`;
+            logs.push(entry);
+            updateLogDisplay();
+            console.log(entry);
+        }
+
+        function updateLogDisplay() {
+            document.getElementById('logOutput').textContent = logs.join('\n');
+            // Auto-scroll to bottom
+            const logDiv = document.getElementById('logOutput');
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLogs() {
+            logs = [];
+            updateLogDisplay();
+        }
+
+        function switchTab(tab) {
+            // Hide all
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+            
+            // Show selected
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Display environment info on load
+        window.addEventListener('load', () => {
+            const info = `
+📍 Current Page Location
+  Hostname: ${window.location.hostname}
+  Port: ${window.location.port}
+  Protocol: ${window.location.protocol}
+  Full URL: ${window.location.href}
+
+🔌 Detected API Base URLs
+  For Localhost: http://localhost:3000/api
+  For Production: https://sikapa-bwxu.onrender.com/api
+
+🌍 Current Environment
+  ${window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '✓ LOCALHOST' : '✓ PRODUCTION'}
+            `.trim();
+            document.getElementById('envInfo').textContent = info;
+            log('Page loaded', 'success');
+        });
+
+        async function testLocalhost(action) {
+            const result = await testEndpoint('http://localhost:3000/api/fund/update', action, 'localhostResult');
+        }
+
+        async function testProduction(action) {
+            const result = await testEndpoint('https://sikapa-bwxu.onrender.com/api/fund/update', action, 'productionResult');
+        }
+
+        async function testEndpoint(url, action, resultElementId) {
+            const resultEl = document.getElementById(resultElementId);
+            resultEl.textContent = 'Sending request...';
+            
+            log(`Testing ${action} on ${url}`, 'info');
+
+            try {
+                const userId = 'test-' + Date.now();
+                const payload = {
+                    userId: userId,
+                    action: action,
+                    amount: 25,
+                    reason: 'Diagnostic test from HTML page',
+                    adminEmail: 'test@diagnostic.com'
+                };
+
+                log(`Request payload: ${JSON.stringify(payload)}`, 'debug');
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                log(`Response status: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                const contentType = response.headers.get('content-type');
+                let data;
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    data = await response.text();
+                }
+
+                log(`Response body: ${JSON.stringify(data)}`, response.ok ? 'success' : 'error');
+
+                let displayText = `✅ Request sent to: ${url}\n\n`;
+                displayText += `📊 Response Status: ${response.status} ${response.statusText}\n`;
+                displayText += `📝 Response Type: ${contentType || 'text/plain'}\n\n`;
+                displayText += `📦 Response Body:\n`;
+                displayText += typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+
+                if (response.ok) {
+                    resultEl.innerHTML = `<span class="success">${displayText}</span>`;
+                } else {
+                    resultEl.innerHTML = `<span class="error">${displayText}</span>`;
+                }
+
+            } catch (error) {
+                log(`Exception: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+                resultEl.innerHTML = `<span class="error">❌ ERROR: ${error.message}\n\nStack:\n${error.stack}</span>`;
+            }
+        }
+
+        // Auto-run status checks
+        async function checkEndpointStatus() {
+            log('Checking endpoint status...', 'info');
+            
+            try {
+                const res1 = await fetch('http://localhost:3000/api/fund/status', { method: 'GET' })
+                    .catch(e => ({ ok: false, error: e.message }));
+                log(`Localhost /api/fund/status: ${res1.ok ? '✓ OK' : '✗ Error'}`, res1.ok ? 'success' : 'error');
+            } catch (e) {
+                log(`Localhost check failed: ${e.message}`, 'error');
+            }
+
+            try {
+                const res2 = await fetch('https://sikapa-bwxu.onrender.com/api/fund/status', { method: 'GET' })
+                    .catch(e => ({ ok: false, error: e.message }));
+                log(`Production /api/fund/status: ${res2.ok ? '✓ OK' : '✗ Error'}`, res2.ok ? 'success' : 'error');
+            } catch (e) {
+                log(`Production check failed: ${e.message}`, 'error');
+            }
+        }
+
+        setTimeout(checkEndpointStatus, 1000);
+    </script>
+</body>
+</html>

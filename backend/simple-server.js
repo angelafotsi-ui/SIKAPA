@@ -26,6 +26,8 @@ try {
   const cashoutRoutes = require('./routes/cashout');
   const adminRoutes = require('./routes/admin');
   const healthRoutes = require('./routes/health');
+  const fundRoutes = require('./routes/fund');
+  const balanceRoutes = require('./routes/balance');
 
   // Use routes
   app.use('/api/auth', authRoutes);
@@ -33,6 +35,8 @@ try {
   app.use('/api/withdraw', withdrawRoutes);
   app.use('/api/cashout', cashoutRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/fund', fundRoutes);
+  app.use('/api/balance', balanceRoutes);
   app.use('/api/health', healthRoutes);
 } catch (e) {
   console.error('Error loading routes:', e.message);
