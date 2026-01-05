@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Ensure Balance</title>
+</head>
+<body>
+    <h1>Testing Ensure Balance Endpoint</h1>
+    <button onclick="testEnsureBalance()">Test Endpoint</button>
+    <div id="result"></div>
+
+    <script>
+        async function testEnsureBalance() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const userId = 'test-user-' + Date.now();
+                const apiBase = 'http://localhost:3000/api';
+                const endpoint = `${apiBase}/balance/ensure-initialized/${userId}`;
+                
+                console.log('[Test] Calling endpoint:', endpoint);
+                resultDiv.innerHTML = `<p>Calling: ${endpoint}</p>`;
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('[Test] Response status:', response.status);
+                console.log('[Test] Response statusText:', response.statusText);
+                console.log('[Test] Response headers:', response.headers);
+                console.log('[Test] Response.ok:', response.ok);
+                
+                // Try to get text first
+                const text = await response.clone().text();
+                console.log('[Test] Response text:', text);
+                console.log('[Test] Text length:', text.length);
+                console.log('[Test] First 100 chars:', text.substring(0, 100));
+                
+                resultDiv.innerHTML += `<p>Status: ${response.status} ${response.statusText}</p>`;
+                resultDiv.innerHTML += `<p>Raw Response: <pre>${JSON.stringify(text)}</pre></p>`;
+                
+                if (text.startsWith('{')) {
+                    const data = JSON.parse(text);
+                    if (data.success) {
+                        resultDiv.innerHTML += `<p><strong>✓ Success!</strong> Balance: GH ${data.balance}</p>`;
+                    } else {
+                        resultDiv.innerHTML += `<p><strong>✗ Failed:</strong> ${data.message}</p>`;
+                    }
+                } else {
+                    resultDiv.innerHTML += `<p><strong>✗ Invalid JSON Response</strong></p>`;
+                }
+            } catch (error) {
+                console.error('[Test] Error:', error);
+                resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+                resultDiv.innerHTML += `<pre>${error.stack}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>

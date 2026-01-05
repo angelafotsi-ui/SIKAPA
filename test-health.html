@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Health Endpoint</title>
+</head>
+<body>
+    <h1>Testing Health Endpoint</h1>
+    <button onclick="testHealth()">Test Health</button>
+    <div id="result"></div>
+
+    <script>
+        async function testHealth() {
+            const resultDiv = document.getElementById('result');
+            try {
+                const response = await fetch('http://localhost:3000/api/health', {
+                    method: 'GET'
+                });
+                const text = await response.text();
+                resultDiv.innerHTML = `<pre>${text}</pre>`;
+                console.log('[Health] Response:', text);
+            } catch (error) {
+                resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+                console.error('[Health] Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
