@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recent Transactions Test</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/recent-transactions.css">
+    <style>
+        body {
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+        }
+
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #ccc;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #bbb;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #20c997;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .test-output {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .test-output.success {
+            border-color: #28a745;
+            background: #f0f9f5;
+        }
+
+        .test-output.error {
+            border-color: #dc3545;
+            background: #fdf6f7;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+
+        .log-entry.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .log-entry.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .log-entry.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .clear-btn {
+            float: right;
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Recent Transactions Feature - Test Suite</h1>
+
+        <div class="status-info">
+            <strong>ℹ️ Note:</strong> Make sure you're logged in and have some transactions in the database before running these tests.
+        </div>
+
+        <!-- API Tests -->
+        <div class="test-section">
+            <h2>1️⃣ API Tests</h2>
+            <div class="test-buttons">
+                <button class="btn-primary" onclick="testGetTransactions()">Test Get Transactions</button>
+                <button class="btn-primary" onclick="testUpdateStatus()">Test Update Status</button>
+                <button class="btn-secondary" onclick="clearLogs()">Clear Logs</button>
+            </div>
+            <div id="api-output" class="test-output"></div>
+        </div>
+
+        <!-- Frontend Component Test -->
+        <div class="test-section">
+            <h2>2️⃣ Frontend Component Test</h2>
+            <div class="test-buttons">
+                <button class="btn-primary" onclick="testFrontendComponent()">Render Recent Transactions</button>
+                <button class="btn-secondary" onclick="startStopPolling()">Toggle Polling</button>
+                <button class="btn-danger" onclick="destroyComponent()">Destroy Component</button>
+            </div>
+            <div id="polling-status" style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; display: none;">
+                <strong>⏳ Polling Status:</strong> <span id="polling-status-text">Stopped</span>
+            </div>
+        </div>
+
+        <!-- Real-time Test -->
+        <div class="test-section">
+            <h2>3️⃣ Real-time Update Test</h2>
+            <div class="status-info">
+                <strong>Instructions:</strong>
+                <ol>
+                    <li>Render Recent Transactions component (step 2️⃣)</li>
+                    <li>Approve a transaction in the admin panel</li>
+                    <li>Watch the Recent Transactions section update in real-time!</li>
+                </ol>
+            </div>
+            <div class="test-buttons">
+                <button class="btn-success" onclick="openAdminPanel()">Open Admin Panel</button>
+            </div>
+        </div>
+
+        <!-- Recent Transactions Container -->
+        <div class="test-section">
+            <h2>4️⃣ Component Display</h2>
+            <div id="recent-transactions-container"></div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/recent-transactions.js"></script>
+    <script>
+        let pollingActive = false;
+        const apiOutput = document.getElementById('api-output');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            apiOutput.appendChild(logEntry);
+            apiOutput.scrollTop = apiOutput.scrollHeight;
+        }
+
+        function clearLogs() {
+            apiOutput.innerHTML = '';
+        }
+
+        async function testGetTransactions() {
+            clearLogs();
+            log('Starting GET transactions test...', 'info');
+
+            const userId = localStorage.getItem('userId');
+            const authToken = localStorage.getItem('authToken');
+
+            if (!userId || !authToken) {
+                log('❌ Not logged in! Please log in first.', 'error');
+                return;
+            }
+
+            log(`User ID: ${userId}`, 'info');
+
+            try {
+                const response = await fetch(`/api/transactions/user/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                log(`Response Status: ${response.status}`, 'info');
+
+                const data = await response.json();
+
+                if (data.success) {
+                    log(`✓ Successfully fetched ${data.transactions.length} transactions`, 'success');
+                    data.transactions.forEach((tx, index) => {
+                        log(`  [${index + 1}] ${tx.type.toUpperCase()} - $${tx.amount} (${tx.status})`, 'info');
+                    });
+                } else {
+                    log(`❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUpdateStatus() {
+            clearLogs();
+            log('Starting UPDATE status test...', 'info');
+
+            const authToken = localStorage.getItem('authToken');
+
+            if (!authToken) {
+                log('❌ Not logged in!', 'error');
+                return;
+            }
+
+            // Example: update a test transaction
+            // Note: You should have at least one transaction to test this
+            const testPayload = {
+                type: 'withdraw',
+                userId: localStorage.getItem('userId'),
+                createdAt: new Date('2026-01-02T19:37:30.123Z').toISOString(),
+                status: 'approved'
+            };
+
+            log(`Attempting to update transaction: ${JSON.stringify(testPayload)}`, 'info');
+
+            try {
+                const response = await fetch('/api/transactions/update-status', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testPayload)
+                });
+
+                log(`Response Status: ${response.status}`, 'info');
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    log(`✓ Successfully updated transaction status to: ${testPayload.status}`, 'success');
+                } else {
+                    log(`❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testFrontendComponent() {
+            clearLogs();
+            log('Rendering Recent Transactions component...', 'info');
+
+            if (recentTransactionsManager) {
+                recentTransactionsManager.render();
+                recentTransactionsManager.loadTransactions();
+                log('✓ Component rendered and transactions loaded', 'success');
+            } else {
+                log('❌ Component manager not available', 'error');
+            }
+        }
+
+        function startStopPolling() {
+            const statusDiv = document.getElementById('polling-status');
+            const statusText = document.getElementById('polling-status-text');
+
+            if (pollingActive) {
+                recentTransactionsManager.stopPolling();
+                statusDiv.style.display = 'none';
+                log('⏹️ Polling stopped', 'info');
+                pollingActive = false;
+            } else {
+                recentTransactionsManager.startPolling();
+                statusDiv.style.display = 'block';
+                statusText.textContent = 'Active (5 second intervals)';
+                log('▶️ Polling started (5 second intervals)', 'info');
+                pollingActive = true;
+            }
+        }
+
+        function destroyComponent() {
+            clearLogs();
+            if (recentTransactionsManager) {
+                recentTransactionsManager.destroy();
+                log('✓ Component destroyed and polling stopped', 'success');
+                pollingActive = false;
+                document.getElementById('polling-status').style.display = 'none';
+            }
+        }
+
+        function openAdminPanel() {
+            window.open('admin.html', '_blank');
+        }
+
+        // Initial log
+        window.addEventListener('load', () => {
+            const userId = localStorage.getItem('userId');
+            if (userId) {
+                log(`Ready to test! User ID: ${userId}`, 'success');
+            } else {
+                log('❌ Not logged in! Please log in first.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

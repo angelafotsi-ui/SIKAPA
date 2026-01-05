@@ -1,0 +1,355 @@
+const express = require('express');
+const router = express.Router();
+const fs = require('fs');
+const path = require('path');
+
+// User balances file
+const BALANCES_FILE = path.join(__dirname, '../logs/user_balances.json');
+
+/**
+ * Initialize balances file if it doesn't exist
+ */
+function ensureBalancesFile() {
+    if (!fs.existsSync(BALANCES_FILE)) {
+        fs.writeFileSync(BALANCES_FILE, JSON.stringify([], null, 2));
+    }
+}
+
+/**
+ * Get all user balances
+ */
+function getAllBalances() {
+    ensureBalancesFile();
+    const data = fs.readFileSync(BALANCES_FILE, 'utf-8');
+    return JSON.parse(data || '[]');
+}
+
+/**
+ * Save balances to file
+ */
+function saveBalances(balances) {
+    fs.writeFileSync(BALANCES_FILE, JSON.stringify(balances, null, 2));
+}
+
+/**
+ * Get user balance
+ */
+router.get('/user/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const balances = getAllBalances();
+        const userBalance = balances.find(b => b.userId === userId);
+
+        if (!userBalance) {
+            return res.json({
+                success: true,
+                balance: 0,
+                userId: userId,
+                currency: 'GHS'
+            });
+        }
+
+        res.json({
+            success: true,
+            balance: userBalance.balance,
+            userId: userId,
+            currency: 'GHS',
+            lastUpdated: userBalance.lastUpdated
+        });
+    } catch (error) {
+        console.error('[Balance] Error getting user balance:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error retrieving balance'
+        });
+    }
+});
+
+/**
+ * Create initial balance for new user (GH 10 bonus)
+ */
+router.post('/init/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const balances = getAllBalances();
+
+        // Check if user already has a balance
+        const existingBalance = balances.find(b => b.userId === userId);
+        if (existingBalance) {
+            return res.json({
+                success: true,
+                message: 'User balance already initialized',
+                balance: existingBalance.balance
+            });
+        }
+
+        // Create new balance with GH 10 bonus
+        const newBalance = {
+            userId: userId,
+            balance: 10.00,
+            currency: 'GHS',
+            createdAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+            bonus: 10.00,
+            bonusGivenAt: new Date().toISOString()
+        };
+
+        balances.push(newBalance);
+        saveBalances(balances);
+
+        console.log(`[Balance] Created initial balance for user ${userId} with GH 10 bonus`);
+
+        res.json({
+            success: true,
+            message: 'Initial balance created with GH 10 bonus',
+            balance: newBalance.balance,
+            userId: userId
+        });
+    } catch (error) {
+        console.error('[Balance] Error initializing balance:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error initializing balance'
+        });
+    }
+});
+
+/**
+ * Add funds to user account (admin only)
+ */
+router.post('/add', (req, res) => {
+    try {
+        const { userId, amount, reason, adminEmail } = req.body;
+
+        // Validate inputs
+        if (!userId || amount === undefined || amount === null) {
+            return res.status(400).json({
+                success: false,
+                message: 'userId and amount are required'
+            });
+        }
+
+        const amountNum = parseFloat(amount);
+        if (isNaN(amountNum) || amountNum <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Amount must be a positive number'
+            });
+        }
+
+        const balances = getAllBalances();
+        let userBalance = balances.find(b => b.userId === userId);
+
+        // Create balance if it doesn't exist
+        if (!userBalance) {
+            userBalance = {
+                userId: userId,
+                balance: 0,
+                currency: 'GHS',
+                createdAt: new Date().toISOString(),
+                transactions: []
+            };
+            balances.push(userBalance);
+        }
+
+        // Add funds
+        const previousBalance = userBalance.balance;
+        userBalance.balance += amountNum;
+        userBalance.lastUpdated = new Date().toISOString();
+
+        // Initialize transactions array if it doesn't exist
+        if (!userBalance.transactions) {
+            userBalance.transactions = [];
+        }
+
+        // Record transaction
+        userBalance.transactions.push({
+            type: 'add',
+            amount: amountNum,
+            reason: reason || 'Admin credit',
+            adminEmail: adminEmail || 'system',
+            timestamp: new Date().toISOString(),
+            previousBalance: previousBalance,
+            newBalance: userBalance.balance
+        });
+
+        // Keep only last 100 transactions
+        if (userBalance.transactions.length > 100) {
+            userBalance.transactions = userBalance.transactions.slice(-100);
+        }
+
+        saveBalances(balances);
+
+        console.log(`[Balance] Added GH${amountNum} to user ${userId}. Balance: GH${previousBalance} → GH${userBalance.balance}`);
+
+        res.json({
+            success: true,
+            message: `Added GH${amountNum.toFixed(2)} to user account`,
+            userId: userId,
+            amount: amountNum,
+            previousBalance: previousBalance,
+            newBalance: userBalance.balance
+        });
+    } catch (error) {
+        console.error('[Balance] Error adding funds:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error adding funds',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * Deduct funds from user account (admin only)
+ */
+router.post('/deduct', (req, res) => {
+    try {
+        const { userId, amount, reason, adminEmail } = req.body;
+
+        // Validate inputs
+        if (!userId || amount === undefined || amount === null) {
+            return res.status(400).json({
+                success: false,
+                message: 'userId and amount are required'
+            });
+        }
+
+        const amountNum = parseFloat(amount);
+        if (isNaN(amountNum) || amountNum <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Amount must be a positive number'
+            });
+        }
+
+        const balances = getAllBalances();
+        const userBalance = balances.find(b => b.userId === userId);
+
+        if (!userBalance) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Check if user has sufficient balance
+        if (userBalance.balance < amountNum) {
+            return res.status(400).json({
+                success: false,
+                message: `Insufficient balance. Current: GH${userBalance.balance.toFixed(2)}, Required: GH${amountNum.toFixed(2)}`
+            });
+        }
+
+        // Deduct funds
+        const previousBalance = userBalance.balance;
+        userBalance.balance -= amountNum;
+        userBalance.lastUpdated = new Date().toISOString();
+
+        // Initialize transactions array if it doesn't exist
+        if (!userBalance.transactions) {
+            userBalance.transactions = [];
+        }
+
+        // Record transaction
+        userBalance.transactions.push({
+            type: 'deduct',
+            amount: amountNum,
+            reason: reason || 'Admin debit',
+            adminEmail: adminEmail || 'system',
+            timestamp: new Date().toISOString(),
+            previousBalance: previousBalance,
+            newBalance: userBalance.balance
+        });
+
+        // Keep only last 100 transactions
+        if (userBalance.transactions.length > 100) {
+            userBalance.transactions = userBalance.transactions.slice(-100);
+        }
+
+        saveBalances(balances);
+
+        console.log(`[Balance] Deducted GH${amountNum} from user ${userId}. Balance: GH${previousBalance} → GH${userBalance.balance}`);
+
+        res.json({
+            success: true,
+            message: `Deducted GH${amountNum.toFixed(2)} from user account`,
+            userId: userId,
+            amount: amountNum,
+            previousBalance: previousBalance,
+            newBalance: userBalance.balance
+        });
+    } catch (error) {
+        console.error('[Balance] Error deducting funds:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deducting funds',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * Get all user balances (admin only)
+ */
+router.get('/all', (req, res) => {
+    try {
+        const balances = getAllBalances();
+        
+        // Return without transaction history for performance
+        const simplifiedBalances = balances.map(b => ({
+            userId: b.userId,
+            balance: b.balance,
+            currency: b.currency,
+            lastUpdated: b.lastUpdated,
+            createdAt: b.createdAt
+        }));
+
+        res.json({
+            success: true,
+            balances: simplifiedBalances,
+            totalUsers: simplifiedBalances.length,
+            totalBalance: simplifiedBalances.reduce((sum, b) => sum + b.balance, 0)
+        });
+    } catch (error) {
+        console.error('[Balance] Error getting all balances:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error retrieving balances'
+        });
+    }
+});
+
+/**
+ * Get user balance history (admin only)
+ */
+router.get('/history/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const balances = getAllBalances();
+        const userBalance = balances.find(b => b.userId === userId);
+
+        if (!userBalance) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            userId: userId,
+            currentBalance: userBalance.balance,
+            createdAt: userBalance.createdAt,
+            transactions: userBalance.transactions || []
+        });
+    } catch (error) {
+        console.error('[Balance] Error getting balance history:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error retrieving balance history'
+        });
+    }
+});
+
+module.exports = router;

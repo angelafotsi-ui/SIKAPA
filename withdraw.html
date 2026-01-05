@@ -204,35 +204,35 @@
             <div class="money-animation">💰</div>
         </div>
         <form id="withdrawForm">
-            <!-- Wallet ID -->
+            <!-- Account Name -->
             <div class="form-group">
-                <label for="walletId">Wallet ID *</label>
+                <label for="walletId">Account Name *</label>
                 <input 
                     type="text" 
                     id="walletId" 
                     name="walletId" 
-                    placeholder="Enter your wallet ID" 
+                    placeholder="Enter your account name" 
                     required
                 >
                 <div class="error-message" id="walletIdError"></div>
             </div>
 
-            <!-- Wallet ID Name -->
+            <!-- Account Number -->
             <div class="form-group">
-                <label for="walletIdName">Wallet ID Name *</label>
+                <label for="walletIdName">Account Number *</label>
                 <input 
                     type="text" 
                     id="walletIdName" 
                     name="walletIdName" 
-                    placeholder="e.g. Abigail Ansah" 
+                    placeholder="e.g. 1234567890" 
                     required
                 >
                 <div class="error-message" id="walletIdNameError"></div>
             </div>
 
-            <!-- Wallet ID Network -->
+            <!-- Network Provider -->
             <div class="form-group">
-                <label for="walletNetwork">Wallet ID Network *</label>
+                <label for="walletNetwork">Network Provider *</label>
                 <select 
                     id="walletNetwork" 
                     name="walletNetwork" 
@@ -294,12 +294,12 @@
             let isValid = true;
 
             if (!walletId) {
-                document.getElementById('walletIdError').textContent = 'Wallet ID is required';
+                document.getElementById('walletIdError').textContent = 'Account Name is required';
                 isValid = false;
             }
 
             if (!walletIdName) {
-                document.getElementById('walletIdNameError').textContent = 'Wallet ID Name is required';
+                document.getElementById('walletIdNameError').textContent = 'Account Number is required';
                 isValid = false;
             }
 

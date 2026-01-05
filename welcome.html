@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sikapa - Admin Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/recent-transactions.css">
     <style>
         .welcome-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -82,8 +83,8 @@
 
     <!-- Welcome Section -->
     <section class="welcome-section">
-        <h2>Welcome to Sikapa Admin</h2>
-        <p>Your secure payment and community management platform</p>
+        <h2>Welcome to Sikapa</h2>
+        <p>Your secure payment and transaction management platform</p>
         
         <div class="user-info">
             <p><strong>User Account:</strong></p>
@@ -97,6 +98,9 @@
             <a href="#" onclick="logoutUser(); return false;">🚪 Logout</a>
         </div>
     </section>
+
+    <!-- Recent Transactions Section -->
+    <div id="recent-transactions-container"></div>
 
     <!-- Features Overview -->
     <section class="features-overview" id="features">
@@ -125,6 +129,7 @@
         </div>
     </section>
 
+    <script src="js/recent-transactions.js"></script>
     <script>
         // Display user info
         document.addEventListener('DOMContentLoaded', function() {

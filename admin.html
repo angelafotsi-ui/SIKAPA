@@ -337,6 +337,17 @@
             background: #a93226;
         }
 
+        .btn-small {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+
+        .btn-small:hover {
+            opacity: 0.9;
+        }
+
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -818,8 +829,8 @@
                                         <div class="action-buttons">
                                             <button class="btn btn-view" onclick="viewDetail('withdrawal', '${JSON.stringify(req).replace(/'/g, "\\'")}')">View</button>
                                             ${req.status === 'pending' ? `
-                                                <button class="btn btn-approve" onclick="updateStatus('withdraw', '${req.userId}', 'approved')">Approve</button>
-                                                <button class="btn btn-reject" onclick="updateStatus('withdraw', '${req.userId}', 'rejected')">Reject</button>
+                                                <button class="btn btn-approve" onclick="updateStatus('withdraw', '${req.userId}', '${req.createdAt}', 'approved')">Approve</button>
+                                                <button class="btn btn-reject" onclick="updateStatus('withdraw', '${req.userId}', '${req.createdAt}', 'rejected')">Reject</button>
                                             ` : ''}
                                             <button class="btn btn-delete" onclick="deleteRequest('withdraw', '${req.userId}', '${req.userEmail}', '${req.createdAt}')">Delete</button>
                                         </div>
@@ -882,8 +893,8 @@
                                         <div class="action-buttons">
                                             <button class="btn btn-view" onclick="viewDetail('cashout', '${JSON.stringify(req).replace(/'/g, "\\'")}')">View</button>
                                             ${req.status === 'pending' ? `
-                                                <button class="btn btn-approve" onclick="updateStatus('cashout', '${req.userId}', 'approved')">Approve</button>
-                                                <button class="btn btn-reject" onclick="updateStatus('cashout', '${req.userId}', 'rejected')">Reject</button>
+                                                <button class="btn btn-approve" onclick="updateStatus('cashout', '${req.userId}', '${req.createdAt}', 'approved')">Approve</button>
+                                                <button class="btn btn-reject" onclick="updateStatus('cashout', '${req.userId}', '${req.createdAt}', 'rejected')">Reject</button>
                                             ` : ''}
                                             <button class="btn btn-delete" onclick="deleteRequest('cashout', '${req.userId}', '${req.userEmail}', '${req.createdAt}')">Delete</button>
                                         </div>
@@ -903,9 +914,22 @@
 
         async function loadUsers() {
             try {
-                const response = await fetch('/api/admin/users');
-                const data = await response.json();
-                const users = data.users || [];
+                const [usersResponse, balancesResponse] = await Promise.all([
+                    fetch('/api/admin/users'),
+                    fetch('/api/balance/all')
+                ]);
+                
+                const usersData = await usersResponse.json();
+                const balancesData = await balancesResponse.json();
+                
+                const users = usersData.users || [];
+                const balances = balancesData.balances || [];
+
+                // Create a map of balances for quick lookup
+                const balanceMap = {};
+                balances.forEach(b => {
+                    balanceMap[b.userId] = b.balance;
+                });
 
                 const html = users.length ? `
                     <table>
@@ -914,8 +938,10 @@
                                 <th>User ID</th>
                                 <th>Email</th>
                                 <th>Name</th>
+                                <th>Balance (GH₵)</th>
                                 <th>Joined</th>
                                 <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -924,8 +950,12 @@
                                     <td>${user.uid ? user.uid.substring(0, 8) : 'N/A'}...</td>
                                     <td>${user.email}</td>
                                     <td>${user.displayName || 'N/A'}</td>
+                                    <td><strong>GH₵ ${(balanceMap[user.uid] || 0).toFixed(2)}</strong></td>
                                     <td>${new Date(user.createdAt || user.metadata?.creationTime).toLocaleDateString()}</td>
                                     <td><span class="status-badge status-completed">${user.disabled ? 'Disabled' : 'Active'}</span></td>
+                                    <td>
+                                        <button class="btn btn-small" onclick="openFundModal('${user.uid}', '${user.email}')">Manage Funds</button>
+                                    </td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -936,6 +966,174 @@
             } catch (error) {
                 console.error('Error loading users:', error);
                 document.getElementById('users-container').innerHTML = '<div class="empty-state"><p>Error loading users</p></div>';
+            }
+        }
+
+        // Fund Management Modal
+        function openFundModal(userId, userEmail) {
+            const modal = document.createElement('div');
+            modal.id = 'fund-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000;
+            `;
+
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 10px;
+                    width: 90%;
+                    max-width: 500px;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                ">
+                    <h3 style="margin: 0 0 1.5rem 0; color: #333;">Manage User Funds</h3>
+                    <p style="color: #666; margin: 0 0 1rem 0;"><strong>User:</strong> ${userEmail}</p>
+                    <p style="color: #666; margin: 0 0 1.5rem 0;"><strong>ID:</strong> ${userId}</p>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Action:</label>
+                        <select id="fundAction" style="
+                            width: 100%;
+                            padding: 0.8rem;
+                            border: 1px solid #ddd;
+                            border-radius: 5px;
+                            font-size: 1rem;
+                        ">
+                            <option value="add">Add Funds (Credit)</option>
+                            <option value="deduct">Deduct Funds (Debit)</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Amount (GH₵):</label>
+                        <input 
+                            type="number" 
+                            id="fundAmount" 
+                            placeholder="Enter amount" 
+                            step="0.01"
+                            min="0.01"
+                            style="
+                                width: 100%;
+                                padding: 0.8rem;
+                                border: 1px solid #ddd;
+                                border-radius: 5px;
+                                font-size: 1rem;
+                                box-sizing: border-box;
+                            "
+                        >
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Reason:</label>
+                        <textarea 
+                            id="fundReason" 
+                            placeholder="e.g., Promotional bonus, Error correction" 
+                            style="
+                                width: 100%;
+                                padding: 0.8rem;
+                                border: 1px solid #ddd;
+                                border-radius: 5px;
+                                font-size: 1rem;
+                                box-sizing: border-box;
+                                resize: vertical;
+                                min-height: 80px;
+                            "
+                        ></textarea>
+                    </div>
+
+                    <div id="fundStatus" style="margin-bottom: 1rem; text-align: center;"></div>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button 
+                            onclick="document.getElementById('fund-modal').remove()" 
+                            style="
+                                padding: 0.8rem 1.5rem;
+                                background: #ddd;
+                                border: none;
+                                border-radius: 5px;
+                                cursor: pointer;
+                                font-weight: 600;
+                            "
+                        >Cancel</button>
+                        <button 
+                            onclick="submitFundManagement('${userId}', '${userEmail}')"
+                            style="
+                                padding: 0.8rem 1.5rem;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                border: none;
+                                border-radius: 5px;
+                                cursor: pointer;
+                                font-weight: 600;
+                            "
+                        >Submit</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            modal.onclick = function(e) {
+                if (e.target === modal) modal.remove();
+            };
+        }
+
+        async function submitFundManagement(userId, userEmail) {
+            const action = document.getElementById('fundAction').value;
+            const amount = parseFloat(document.getElementById('fundAmount').value);
+            const reason = document.getElementById('fundReason').value;
+            const statusDiv = document.getElementById('fundStatus');
+
+            if (!amount || amount <= 0) {
+                statusDiv.innerHTML = '<div style="color: #e74c3c; font-weight: 600;">Please enter a valid amount</div>';
+                return;
+            }
+
+            if (!reason.trim()) {
+                statusDiv.innerHTML = '<div style="color: #e74c3c; font-weight: 600;">Please provide a reason</div>';
+                return;
+            }
+
+            statusDiv.innerHTML = '<div style="color: #667eea;">Processing...</div>';
+
+            try {
+                const endpoint = action === 'add' ? '/api/balance/add' : '/api/balance/deduct';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        amount: amount,
+                        reason: reason,
+                        adminEmail: localStorage.getItem('userEmail')
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    statusDiv.innerHTML = `<div style="color: #27ae60; font-weight: 600;">✓ ${data.message}</div>`;
+                    setTimeout(() => {
+                        document.getElementById('fund-modal').remove();
+                        loadUsers();
+                    }, 1500);
+                } else {
+                    statusDiv.innerHTML = `<div style="color: #e74c3c; font-weight: 600;">Error: ${data.message || 'Failed to update balance'}</div>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.innerHTML = `<div style="color: #e74c3c; font-weight: 600;">Error: ${error.message}</div>`;
             }
         }
 
@@ -1022,16 +1220,40 @@
             document.getElementById('detail-modal').classList.remove('active');
         }
 
-        function updateStatus(type, userId, status) {
+        async function updateStatus(type, userId, createdAt, status) {
             if (confirm(`Are you sure you want to ${status} this request?`)) {
-                // In production, send to backend
-                alert(`Request ${status} successfully! (Demo mode)`);
-                if (type === 'withdraw') {
-                    loadWithdrawals();
-                } else {
-                    loadCashouts();
+                try {
+                    const response = await fetch('/api/transactions/update-status', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            type: type,
+                            userId: userId,
+                            createdAt: createdAt,
+                            status: status
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        alert(`✓ Request ${status} successfully!`);
+                        if (type === 'withdraw') {
+                            loadWithdrawals();
+                        } else {
+                            loadCashouts();
+                        }
+                        loadDashboardData();
+                    } else {
+                        alert(`Error: ${data.message || 'Failed to update status'}`);
+                    }
+                } catch (error) {
+                    console.error('Error updating status:', error);
+                    alert(`Error: ${error.message}`);
                 }
-                loadDashboardData();
             }
         }
 

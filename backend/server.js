@@ -58,6 +58,8 @@ const debugRoutes = require('./routes/debug');
 const cashoutRoutes = require('./routes/cashout');
 const withdrawRoutes = require('./routes/withdraw');
 const adminRoutes = require('./routes/admin');
+const transactionRoutes = require('./routes/transactions');
+const balanceRoutes = require('./routes/balance');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
@@ -65,6 +67,8 @@ app.use('/api/debug', debugRoutes);
 app.use('/api/cashout', cashoutRoutes);
 app.use('/api/withdraw', withdrawRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/balance', balanceRoutes);
 app.use('/api', healthRoutes);
 
 console.log('[3] API routes mounted');

@@ -5,8 +5,181 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Sikapa</title>
     <link rel="stylesheet" href="css/auth.css">
+    <style>
+        /* Welcome Popup Styles */
+        .welcome-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .welcome-popup.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .welcome-popup-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+        }
+
+        .welcome-popup-content {
+            position: relative;
+            z-index: 10000;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            text-align: center;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .welcome-popup-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .welcome-popup h2 {
+            color: #667eea;
+            font-size: 2rem;
+            margin: 0 0 1rem 0;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .welcome-popup-divider {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 1rem auto;
+            border-radius: 2px;
+        }
+
+        .welcome-popup-message {
+            color: #333;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin: 1.5rem 0;
+            font-weight: 500;
+        }
+
+        .bonus-highlight {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            margin: 1rem 0;
+            font-size: 1.3rem;
+        }
+
+        .welcome-popup-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.9rem 2.5rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .welcome-popup-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .welcome-popup-button:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 600px) {
+            .welcome-popup-content {
+                padding: 2rem 1.5rem;
+            }
+
+            .welcome-popup h2 {
+                font-size: 1.6rem;
+            }
+
+            .welcome-popup-message {
+                font-size: 0.95rem;
+            }
+
+            .bonus-highlight {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Welcome Popup -->
+    <div class="welcome-popup" id="welcomePopup">
+        <div class="welcome-popup-backdrop" onclick="closeWelcomePopup()"></div>
+        <div class="welcome-popup-content">
+            <div class="welcome-popup-icon">🎉</div>
+            <h2>WELCOME DEAR USER</h2>
+            <div class="welcome-popup-divider"></div>
+            <p class="welcome-popup-message">
+                Welcome To Sikapa Ghana, a welcome bonus has been processed to your account.
+            </p>
+            <div class="bonus-highlight">🎁 GH₵10.00 BONUS</div>
+            <p class="welcome-popup-message" style="font-size: 0.95rem; color: #666; margin-top: 1rem;">
+                Thank You for joining our community
+            </p>
+            <button class="welcome-popup-button" onclick="closeWelcomePopup()">Get Started</button>
+        </div>
+    </div>
+
     <div class="auth-container">
         <div class="auth-box">
             <div class="auth-header">
@@ -55,6 +228,22 @@
 
     <script src="js/auth.js"></script>
     <script>
+        function showWelcomePopup() {
+            const popup = document.getElementById('welcomePopup');
+            popup.classList.add('active');
+            // Mark that user has seen the welcome popup
+            localStorage.setItem('welcome_popup_shown_' + localStorage.getItem('user_uid'), 'true');
+        }
+
+        function closeWelcomePopup() {
+            const popup = document.getElementById('welcomePopup');
+            popup.classList.remove('active');
+            // Redirect to dashboard
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
+        }
+
         document.getElementById('signup-form').addEventListener('submit', handleSignup);
 
         async function handleSignup(e) {
@@ -97,17 +286,26 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    statusDiv.innerHTML = '<div class="success">✓ Account created successfully! Redirecting...</div>';
                     // Store user info in localStorage
                     localStorage.setItem('user_uid', data.uid);
                     localStorage.setItem('user_email', data.email);
                     localStorage.setItem('user_name', data.displayName);
+                    localStorage.setItem('userId', data.uid);
+                    localStorage.setItem('userEmail', data.email);
                     if (data.customToken) {
                         localStorage.setItem('auth_token', data.customToken);
+                        localStorage.setItem('authToken', data.customToken);
                     }
+                    
+                    // Hide form and show welcome popup
+                    statusDiv.innerHTML = '<div class="success">✓ Account created successfully!</div>';
+                    document.getElementById('signup-form').style.display = 'none';
+                    document.querySelector('.auth-footer').style.display = 'none';
+                    
+                    // Show welcome popup
                     setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 2000);
+                        showWelcomePopup();
+                    }, 1000);
                 } else {
                     statusDiv.innerHTML = `<div class="error">✗ ${data.message}</div>`;
                 }

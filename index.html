@@ -16,7 +16,44 @@
             }
             // Update UI with user info and admin button if applicable
             updateAuthUI();
+            
+            // Fetch and display user balance
+            fetchUserBalance();
         });
+
+        // Fetch user balance from backend
+        async function fetchUserBalance() {
+            try {
+                const userId = localStorage.getItem('userId');
+                const authToken = localStorage.getItem('authToken');
+                
+                if (!userId) {
+                    document.getElementById('balanceAmount').textContent = '0.00';
+                    return;
+                }
+
+                const response = await fetch(`/api/balance/user/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.balance !== undefined) {
+                    document.getElementById('balanceAmount').textContent = data.balance.toFixed(2);
+                } else {
+                    document.getElementById('balanceAmount').textContent = '0.00';
+                }
+            } catch (error) {
+                console.error('Error fetching balance:', error);
+                document.getElementById('balanceAmount').textContent = '0.00';
+            }
+        }
+
+        // Refresh balance every 5 seconds
+        setInterval(fetchUserBalance, 5000);
     </script>
 
     <!-- Navigation -->
@@ -45,8 +82,33 @@
             
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <button class="cta-button cashout-btn" onclick="window.location.href='cashout.html'">Cashout</button>
+                <button class="cta-button cashout-btn" onclick="window.location.href='cashout.html'">Deposit/ Cashout</button>
                 <button class="cta-button withdraw-btn" onclick="window.location.href='withdraw.html'">Withdraw</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Business Roadmap Section -->
+    <section class="business-roadmap">
+        <h2>BUSINESS ROADMAP</h2>
+        <div class="roadmap-container">
+            <div class="roadmap-item">
+                <div class="roadmap-number">1</div>
+                <div class="roadmap-content">
+                    <p>Deposit <span class="highlight">GH₵100</span> - Cashout <span class="highlight">GH₵600</span></p>
+                </div>
+            </div>
+            <div class="roadmap-item">
+                <div class="roadmap-number">2</div>
+                <div class="roadmap-content">
+                    <p>Deposit <span class="highlight">GH₵300</span> - Cashout <span class="highlight">GH₵1000</span></p>
+                </div>
+            </div>
+            <div class="roadmap-item">
+                <div class="roadmap-number">3</div>
+                <div class="roadmap-content">
+                    <p>Deposit <span class="highlight">GH₵500</span> - Cashout <span class="highlight">GH₵1800</span></p>
+                </div>
             </div>
         </div>
     </section>

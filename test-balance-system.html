@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balance System Test - Sikapa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            color: #0c3d6a;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Balance Management System - Test Suite</h1>
+
+        <!-- Test 1: Get User Balance -->
+        <div class="test-section">
+            <h2>Test 1: Get User Balance</h2>
+            <div class="info-box">
+                Returns current balance for a user
+            </div>
+            <div class="form-group">
+                <label>User ID:</label>
+                <input type="text" id="userId1" placeholder="e.g., aU1rCqPO3SclZfIqbQMOKr7h2H02">
+            </div>
+            <button onclick="testGetBalance()">Get Balance</button>
+            <div id="result1"></div>
+        </div>
+
+        <!-- Test 2: Initialize Balance (GH10 Bonus) -->
+        <div class="test-section">
+            <h2>Test 2: Initialize Balance (GH₵10 Bonus)</h2>
+            <div class="info-box">
+                Creates initial balance for new user with GH₵10 welcome bonus
+            </div>
+            <div class="form-group">
+                <label>User ID:</label>
+                <input type="text" id="userId2" placeholder="e.g., test_user_123">
+            </div>
+            <button onclick="testInitBalance()">Initialize Balance</button>
+            <div id="result2"></div>
+        </div>
+
+        <!-- Test 3: Add Funds -->
+        <div class="test-section">
+            <h2>Test 3: Add Funds (Credit)</h2>
+            <div class="info-box">
+                Admin adds funds to user account
+            </div>
+            <div class="grid">
+                <div class="form-group">
+                    <label>User ID:</label>
+                    <input type="text" id="userId3" placeholder="User ID">
+                </div>
+                <div class="form-group">
+                    <label>Amount (GH₵):</label>
+                    <input type="number" id="amount3" placeholder="e.g., 25.50" step="0.01" min="0.01">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Reason:</label>
+                <textarea id="reason3" placeholder="e.g., Promotional bonus">Promotional bonus</textarea>
+            </div>
+            <button onclick="testAddFunds()">Add Funds</button>
+            <div id="result3"></div>
+        </div>
+
+        <!-- Test 4: Deduct Funds -->
+        <div class="test-section">
+            <h2>Test 4: Deduct Funds (Debit)</h2>
+            <div class="info-box">
+                Admin deducts funds from user account
+            </div>
+            <div class="grid">
+                <div class="form-group">
+                    <label>User ID:</label>
+                    <input type="text" id="userId4" placeholder="User ID">
+                </div>
+                <div class="form-group">
+                    <label>Amount (GH₵):</label>
+                    <input type="number" id="amount4" placeholder="e.g., 5.00" step="0.01" min="0.01">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Reason:</label>
+                <textarea id="reason4" placeholder="e.g., Error correction">Error correction</textarea>
+            </div>
+            <button onclick="testDeductFunds()">Deduct Funds</button>
+            <div id="result4"></div>
+        </div>
+
+        <!-- Test 5: Get All Balances -->
+        <div class="test-section">
+            <h2>Test 5: Get All User Balances</h2>
+            <div class="info-box">
+                Returns list of all users and their balances (admin only)
+            </div>
+            <button onclick="testGetAllBalances()">Get All Balances</button>
+            <div id="result5"></div>
+        </div>
+
+        <!-- Test 6: Get Balance History -->
+        <div class="test-section">
+            <h2>Test 6: Get User Balance History</h2>
+            <div class="info-box">
+                Returns transaction history for a user
+            </div>
+            <div class="form-group">
+                <label>User ID:</label>
+                <input type="text" id="userId6" placeholder="User ID">
+            </div>
+            <button onclick="testGetHistory()">Get History</button>
+            <div id="result6"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000/api'
+            : 'https://sikapa-bwxu.onrender.com/api';
+
+        function showResult(elementId, data, isError = false) {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.className = `result ${isError ? 'error' : 'success'}`;
+            resultDiv.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function testGetBalance() {
+            const userId = document.getElementById('userId1').value;
+            if (!userId) {
+                showResult('result1', { error: 'Please enter User ID' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/user/${userId}`);
+                const data = await response.json();
+                showResult('result1', data, !response.ok);
+            } catch (error) {
+                showResult('result1', { error: error.message }, true);
+            }
+        }
+
+        async function testInitBalance() {
+            const userId = document.getElementById('userId2').value;
+            if (!userId) {
+                showResult('result2', { error: 'Please enter User ID' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/init/${userId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                showResult('result2', data, !response.ok);
+            } catch (error) {
+                showResult('result2', { error: error.message }, true);
+            }
+        }
+
+        async function testAddFunds() {
+            const userId = document.getElementById('userId3').value;
+            const amount = document.getElementById('amount3').value;
+            const reason = document.getElementById('reason3').value;
+
+            if (!userId || !amount) {
+                showResult('result3', { error: 'Please fill all fields' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        amount: parseFloat(amount),
+                        reason,
+                        adminEmail: 'test@example.com'
+                    })
+                });
+                const data = await response.json();
+                showResult('result3', data, !response.ok);
+            } catch (error) {
+                showResult('result3', { error: error.message }, true);
+            }
+        }
+
+        async function testDeductFunds() {
+            const userId = document.getElementById('userId4').value;
+            const amount = document.getElementById('amount4').value;
+            const reason = document.getElementById('reason4').value;
+
+            if (!userId || !amount) {
+                showResult('result4', { error: 'Please fill all fields' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/deduct`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        amount: parseFloat(amount),
+                        reason,
+                        adminEmail: 'test@example.com'
+                    })
+                });
+                const data = await response.json();
+                showResult('result4', data, !response.ok);
+            } catch (error) {
+                showResult('result4', { error: error.message }, true);
+            }
+        }
+
+        async function testGetAllBalances() {
+            try {
+                const response = await fetch(`${API_BASE}/balance/all`);
+                const data = await response.json();
+                showResult('result5', data, !response.ok);
+            } catch (error) {
+                showResult('result5', { error: error.message }, true);
+            }
+        }
+
+        async function testGetHistory() {
+            const userId = document.getElementById('userId6').value;
+            if (!userId) {
+                showResult('result6', { error: 'Please enter User ID' }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/history/${userId}`);
+                const data = await response.json();
+                showResult('result6', data, !response.ok);
+            } catch (error) {
+                showResult('result6', { error: error.message }, true);
+            }
+        }
+    </script>
+</body>
+</html>

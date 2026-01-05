@@ -1,4 +1,5 @@
 let { auth } = require('../config/firebase');
+const fetch = require('node-fetch');
 
 /**
  * Sign up user
@@ -45,16 +46,32 @@ exports.signup = async (req, res, next) => {
 
     console.log('[Signup] User created successfully:', userRecord.uid);
 
+    // Initialize user balance with GH 10 bonus
+    try {
+      const apiBase = process.env.BASE_URL || 'http://localhost:3000';
+      await fetch(`${apiBase}/api/balance/init/${userRecord.uid}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('[Signup] Balance initialized for user:', userRecord.uid);
+    } catch (balanceError) {
+      console.error('[Signup] Error initializing balance:', balanceError.message);
+      // Don't fail signup if balance init fails, just log it
+    }
+
     // Create custom token for immediate login
     const customToken = await auth.createCustomToken(userRecord.uid);
 
     res.json({
       success: true,
-      message: 'User created successfully',
+      message: 'User created successfully with GH 10 welcome bonus!',
       uid: userRecord.uid,
       email: userRecord.email,
       displayName: name,
-      customToken: customToken
+      customToken: customToken,
+      bonus: 10.00
     });
   } catch (error) {
     console.error('[Signup] Error:', error.message);
