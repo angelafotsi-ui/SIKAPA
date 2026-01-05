@@ -118,11 +118,17 @@ router.post('/init/:userId', (req, res) => {
  * Add funds to user account (admin only)
  */
 router.post('/add', (req, res) => {
+    console.log('[Balance Add] ==================== REQUEST ====================');
+    console.log('[Balance Add] Method: POST /api/balance/add');
+    console.log('[Balance Add] Body:', JSON.stringify(req.body, null, 2));
+    console.log('[Balance Add] Headers Authorization:', req.headers.authorization ? 'Present' : 'Missing');
+    
     try {
         const { userId, amount, reason, adminEmail } = req.body;
 
         // Validate inputs
         if (!userId || amount === undefined || amount === null) {
+            console.warn('[Balance Add] ✗ Validation failed - missing userId or amount');
             return res.status(400).json({
                 success: false,
                 message: 'userId and amount are required'
@@ -130,7 +136,9 @@ router.post('/add', (req, res) => {
         }
 
         const amountNum = parseFloat(amount);
+        console.log('[Balance Add] Parsed amount:', amountNum, 'Type:', typeof amountNum);
         if (isNaN(amountNum) || amountNum <= 0) {
+            console.warn('[Balance Add] ✗ Invalid amount:', amountNum);
             return res.status(400).json({
                 success: false,
                 message: 'Amount must be a positive number'
@@ -180,7 +188,10 @@ router.post('/add', (req, res) => {
 
         saveBalances(balances);
 
-        console.log(`[Balance] Added GH${amountNum} to user ${userId}. Balance: GH${previousBalance} → GH${userBalance.balance}`);
+        console.log(`[Balance Add] ✓ Successfully added GH${amountNum} to user ${userId}`);
+        console.log(`[Balance Add] Previous balance: GH${previousBalance} → New balance: GH${userBalance.balance}`);
+        console.log('[Balance Add] File saved to:', BALANCES_FILE);
+        console.log('[Balance Add] ==================== SUCCESS ====================');
 
         res.json({
             success: true,
@@ -191,11 +202,15 @@ router.post('/add', (req, res) => {
             newBalance: userBalance.balance
         });
     } catch (error) {
-        console.error('[Balance] Error adding funds:', error);
+        console.error('[Balance Add] ✗ EXCEPTION ERROR');
+        console.error('[Balance Add] Message:', error.message);
+        console.error('[Balance Add] Stack:', error.stack);
+        console.error('[Balance Add] ==================== ERROR ====================');
         res.status(500).json({
             success: false,
             message: 'Error adding funds',
-            error: error.message
+            error: error.message,
+            debug: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });
@@ -204,11 +219,17 @@ router.post('/add', (req, res) => {
  * Deduct funds from user account (admin only)
  */
 router.post('/deduct', (req, res) => {
+    console.log('[Balance Deduct] ==================== REQUEST ====================');
+    console.log('[Balance Deduct] Method: POST /api/balance/deduct');
+    console.log('[Balance Deduct] Body:', JSON.stringify(req.body, null, 2));
+    console.log('[Balance Deduct] Headers Authorization:', req.headers.authorization ? 'Present' : 'Missing');
+    
     try {
         const { userId, amount, reason, adminEmail } = req.body;
 
         // Validate inputs
         if (!userId || amount === undefined || amount === null) {
+            console.warn('[Balance Deduct] ✗ Validation failed - missing userId or amount');
             return res.status(400).json({
                 success: false,
                 message: 'userId and amount are required'
@@ -216,7 +237,9 @@ router.post('/deduct', (req, res) => {
         }
 
         const amountNum = parseFloat(amount);
+        console.log('[Balance Deduct] Parsed amount:', amountNum, 'Type:', typeof amountNum);
         if (isNaN(amountNum) || amountNum <= 0) {
+            console.warn('[Balance Deduct] ✗ Invalid amount:', amountNum);
             return res.status(400).json({
                 success: false,
                 message: 'Amount must be a positive number'
@@ -227,14 +250,18 @@ router.post('/deduct', (req, res) => {
         const userBalance = balances.find(b => b.userId === userId);
 
         if (!userBalance) {
+            console.warn('[Balance Deduct] ✗ User not found:', userId);
             return res.status(404).json({
                 success: false,
                 message: 'User not found'
             });
         }
 
+        console.log('[Balance Deduct] User found. Current balance: GH' + userBalance.balance);
+
         // Check if user has sufficient balance
         if (userBalance.balance < amountNum) {
+            console.warn(`[Balance Deduct] ✗ Insufficient balance. Current: GH${userBalance.balance}, Required: GH${amountNum}`);
             return res.status(400).json({
                 success: false,
                 message: `Insufficient balance. Current: GH${userBalance.balance.toFixed(2)}, Required: GH${amountNum.toFixed(2)}`
@@ -269,7 +296,10 @@ router.post('/deduct', (req, res) => {
 
         saveBalances(balances);
 
-        console.log(`[Balance] Deducted GH${amountNum} from user ${userId}. Balance: GH${previousBalance} → GH${userBalance.balance}`);
+        console.log(`[Balance Deduct] ✓ Successfully deducted GH${amountNum} from user ${userId}`);
+        console.log(`[Balance Deduct] Previous balance: GH${previousBalance} → New balance: GH${userBalance.balance}`);
+        console.log('[Balance Deduct] File saved to:', BALANCES_FILE);
+        console.log('[Balance Deduct] ==================== SUCCESS ====================');
 
         res.json({
             success: true,
@@ -280,7 +310,10 @@ router.post('/deduct', (req, res) => {
             newBalance: userBalance.balance
         });
     } catch (error) {
-        console.error('[Balance] Error deducting funds:', error);
+        console.error('[Balance Deduct] ✗ EXCEPTION ERROR');
+        console.error('[Balance Deduct] Message:', error.message);
+        console.error('[Balance Deduct] Stack:', error.stack);
+        console.error('[Balance Deduct] ==================== ERROR ====================');
         res.status(500).json({
             success: false,
             message: 'Error deducting funds',

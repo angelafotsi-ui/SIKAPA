@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balance API Test - Sikapa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            color: #0c3d6a;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .test-section h2 {
+            color: #667eea;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button.secondary {
+            background: #ccc;
+            color: #333;
+        }
+
+        button.secondary:hover {
+            background: #bbb;
+        }
+
+        .output {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .output.success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .output.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .endpoint-info {
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #1565c0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .clear-btn {
+            background: #999;
+            color: white;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+
+        .clear-btn:hover {
+            background: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Balance API Test Suite</h1>
+        <p class="subtitle">Test the balance management endpoints</p>
+
+        <div class="info-box">
+            <strong>ℹ️ Note:</strong> Make sure the backend server is running at <code>http://localhost:3000</code> before testing.
+            Start with: <code>cd backend && node server.js</code>
+        </div>
+
+        <!-- Server Status -->
+        <div class="test-section">
+            <h2>🔌 Server Status</h2>
+            <div class="endpoint-info">
+                API Base URL: <code id="apiBase">http://localhost:3000/api</code>
+            </div>
+            <button onclick="testServerStatus()">Check Server Status</button>
+            <div id="statusOutput" class="output"></div>
+        </div>
+
+        <!-- Test 1: Get Balance -->
+        <div class="test-section">
+            <h2>1️⃣ Get User Balance</h2>
+            <div class="endpoint-info">
+                GET /api/balance/user/:userId
+            </div>
+            <div class="form-group">
+                <label>User ID:</label>
+                <input type="text" id="userId1" placeholder="e.g., aU1rCqPO3SclZfIqbQMOKr7h2H02" value="aU1rCqPO3SclZfIqbQMOKr7h2H02">
+            </div>
+            <button onclick="testGetBalance()">Get Balance</button>
+            <div id="output1" class="output"></div>
+        </div>
+
+        <!-- Test 2: Add Funds -->
+        <div class="test-section">
+            <h2>2️⃣ Add Funds (Credit)</h2>
+            <div class="endpoint-info">
+                POST /api/balance/add
+            </div>
+            <div class="grid">
+                <div class="form-group">
+                    <label>User ID:</label>
+                    <input type="text" id="userId2" placeholder="e.g., aU1rCqPO3SclZfIqbQMOKr7h2H02" value="aU1rCqPO3SclZfIqbQMOKr7h2H02">
+                </div>
+                <div class="form-group">
+                    <label>Amount (GH₵):</label>
+                    <input type="number" id="amount2" placeholder="e.g., 10" step="0.01" min="0.01" value="10">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Reason:</label>
+                <textarea id="reason2" placeholder="e.g., Promotional Bonus">Promotional Bonus</textarea>
+            </div>
+            <div class="button-group">
+                <button onclick="testAddFunds()">Add Funds</button>
+                <button class="secondary clear-btn" onclick="document.getElementById('output2').innerHTML = ''">Clear Output</button>
+            </div>
+            <div id="output2" class="output"></div>
+        </div>
+
+        <!-- Test 3: Deduct Funds -->
+        <div class="test-section">
+            <h2>3️⃣ Deduct Funds (Debit)</h2>
+            <div class="endpoint-info">
+                POST /api/balance/deduct
+            </div>
+            <div class="grid">
+                <div class="form-group">
+                    <label>User ID:</label>
+                    <input type="text" id="userId3" placeholder="e.g., aU1rCqPO3SclZfIqbQMOKr7h2H02" value="aU1rCqPO3SclZfIqbQMOKr7h2H02">
+                </div>
+                <div class="form-group">
+                    <label>Amount (GH₵):</label>
+                    <input type="number" id="amount3" placeholder="e.g., 5" step="0.01" min="0.01" value="5">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Reason:</label>
+                <textarea id="reason3" placeholder="e.g., Refund">Refund</textarea>
+            </div>
+            <div class="button-group">
+                <button onclick="testDeductFunds()">Deduct Funds</button>
+                <button class="secondary clear-btn" onclick="document.getElementById('output3').innerHTML = ''">Clear Output</button>
+            </div>
+            <div id="output3" class="output"></div>
+        </div>
+
+        <!-- Test 4: Initialize Balance -->
+        <div class="test-section">
+            <h2>4️⃣ Initialize Balance (GH₵10 Bonus)</h2>
+            <div class="endpoint-info">
+                POST /api/balance/init/:userId
+            </div>
+            <div class="form-group">
+                <label>User ID:</label>
+                <input type="text" id="userId4" placeholder="e.g., test_user_new">
+            </div>
+            <button onclick="testInitBalance()">Initialize Balance</button>
+            <div id="output4" class="output"></div>
+        </div>
+
+        <!-- Test 5: Get All Balances -->
+        <div class="test-section">
+            <h2>5️⃣ Get All Balances</h2>
+            <div class="endpoint-info">
+                GET /api/balance/all
+            </div>
+            <button onclick="testGetAllBalances()">Get All Balances</button>
+            <div id="output5" class="output"></div>
+        </div>
+
+        <!-- Test 6: Get Balance History -->
+        <div class="test-section">
+            <h2>6️⃣ Get Balance History</h2>
+            <div class="endpoint-info">
+                GET /api/balance/history/:userId
+            </div>
+            <div class="form-group">
+                <label>User ID:</label>
+                <input type="text" id="userId6" placeholder="e.g., aU1rCqPO3SclZfIqbQMOKr7h2H02" value="aU1rCqPO3SclZfIqbQMOKr7h2H02">
+            </div>
+            <button onclick="testGetHistory()">Get History</button>
+            <div id="output6" class="output"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        function formatOutput(data, isError = false) {
+            const div = document.createElement('div');
+            div.className = `output ${isError ? 'error' : 'success'}`;
+            div.textContent = JSON.stringify(data, null, 2);
+            return div;
+        }
+
+        async function testServerStatus() {
+            const output = document.getElementById('statusOutput');
+            output.innerHTML = '<span class="status pending">Testing...</span>';
+
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                output.innerHTML = '';
+                output.appendChild(formatOutput({ status: 'Connected', data }, false));
+                output.innerHTML += '<br/><span class="status success">✓ Server is running!</span>';
+            } catch (error) {
+                output.innerHTML = '';
+                output.appendChild(formatOutput({ error: error.message, hint: 'Make sure server is running at http://localhost:3000' }, true));
+                output.innerHTML += '<br/><span class="status error">✗ Cannot connect to server</span>';
+            }
+        }
+
+        async function testGetBalance() {
+            const userId = document.getElementById('userId1').value;
+            if (!userId) {
+                alert('Please enter User ID');
+                return;
+            }
+
+            const output = document.getElementById('output1');
+            output.innerHTML = '<span class="status pending">Loading...</span>';
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/user/${userId}`);
+                const data = await response.json();
+                output.innerHTML = '';
+                output.appendChild(formatOutput(data, !response.ok));
+            } catch (error) {
+                output.innerHTML = '';
+                output.appendChild(formatOutput({ error: error.message }, true));
+            }
+        }
+
+        async function testAddFunds() {
+            const userId = document.getElementById('userId2').value;
+            const amount = parseFloat(document.getElementById('amount2').value);
+            const reason = document.getElementById('reason2').value;
+
+            if (!userId || !amount || !reason) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const output = document.getElementById('output2');
+            output.innerHTML = '<span class="status pending">Processing...</span>';
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token')
+                    },
+                    body: JSON.stringify({
+                        userId,
+                        amount,
+                        reason,
+                        adminEmail: 'test@example.com'
+                    })
+                });
+
+                const data = await response.json();
+                output.innerHTML = '';
+                output.appendChild(formatOutput(data, !response.ok));
+                
+                if (response.ok && data.success) {
+                    output.innerHTML += '<br/><span class="status success">✓ Funds added successfully!</span>';
+                } else {
+                    output.innerHTML += '<br/><span class="status error">✗ ' + (data.message || 'Failed') + '</span>';
+                }
+            } catch (error) {
+                output.innerHTML = '';
+                output.appendChild(formatOutput({ error: error.message }, true));
+                output.innerHTML += '<br/><span class="status error">✗ Network error</span>';
+            }
+        }
+
+        async function testDeductFunds() {
+            const userId = document.getElementById('userId3').value;
+            const amount = parseFloat(document.getElementById('amount3').value);
+            const reason = document.getElementById('reason3').value;
+
+            if (!userId || !amount || !reason) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const output = document.getElementById('output3');
+            output.innerHTML = '<span class="status pending">Processing...</span>';
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/deduct`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || 'test-token')
+                    },
+                    body: JSON.stringify({
+                        userId,
+                        amount,
+                        reason,
+                        adminEmail: 'test@example.com'
+                    })
+                });
+
+                const data = await response.json();
+                output.innerHTML = '';
+                output.appendChild(formatOutput(data, !response.ok));
+                
+                if (response.ok && data.success) {
+                    output.innerHTML += '<br/><span class="status success">✓ Funds deducted successfully!</span>';
+                } else {
+                    output.innerHTML += '<br/><span class="status error">✗ ' + (data.message || 'Failed') + '</span>';
+                }
+            } catch (error) {
+                output.innerHTML = '';
+                output.appendChild(formatOutput({ error: error.message }, true));
+                output.innerHTML += '<br/><span class="status error">✗ Network error</span>';
+            }
+        }
+
+        async function testInitBalance() {
+            const userId = document.getElementById('userId4').value;
+            if (!userId) {
+                alert('Please enter User ID');
+                return;
+            }
+
+            const output = document.getElementById('output4');
+            output.innerHTML = '<span class="status pending">Initializing...</span>';
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/init/${userId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                output.innerHTML = '';
+                output.appendChild(formatOutput(data, !response.ok));
+            } catch (error) {
+                output.innerHTML = '';
+                output.appendChild(formatOutput({ error: error.message }, true));
+            }
+        }
+
+        async function testGetAllBalances() {
+            const output = document.getElementById('output5');
+            output.innerHTML = '<span class="status pending">Loading...</span>';
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/all`);
+                const data = await response.json();
+                output.innerHTML = '';
+                output.appendChild(formatOutput(data, !response.ok));
+            } catch (error) {
+                output.innerHTML = '';
+                output.appendChild(formatOutput({ error: error.message }, true));
+            }
+        }
+
+        async function testGetHistory() {
+            const userId = document.getElementById('userId6').value;
+            if (!userId) {
+                alert('Please enter User ID');
+                return;
+            }
+
+            const output = document.getElementById('output6');
+            output.innerHTML = '<span class="status pending">Loading...</span>';
+
+            try {
+                const response = await fetch(`${API_BASE}/balance/history/${userId}`);
+                const data = await response.json();
+                output.innerHTML = '';
+                output.appendChild(formatOutput(data, !response.ok));
+            } catch (error) {
+                output.innerHTML = '';
+                output.appendChild(formatOutput({ error: error.message }, true));
+            }
+        }
+
+        // Test server on page load
+        window.addEventListener('load', () => {
+            testServerStatus();
+        });
+    </script>
+</body>
+</html>
