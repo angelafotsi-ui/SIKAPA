@@ -21,8 +21,14 @@ app.use(cors({
       'http://localhost:3000',
       'http://localhost:5000',
       'http://127.0.0.1:3000',
-      'http://127.0.0.1:5000'
+      'http://127.0.0.1:5000',
+      'https://sikapa-bwxu.onrender.com'
     ];
+    
+    // Add environment-based CORS origin if configured
+    if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
+      allowedOrigins.push(process.env.FRONTEND_URL);
+    }
     
     // Allow requests with no origin (mobile apps, Postman, curl requests)
     if (!origin) {
