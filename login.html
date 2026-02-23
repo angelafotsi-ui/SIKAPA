@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="true">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
     <title>Log In - Sikapa</title>
     <link rel="stylesheet" href="css/auth.css">
 </head>
@@ -112,11 +115,18 @@
                         localStorage.setItem('authToken', data.customToken);
                     }
                     
+                    // Store user data
+                    localStorage.setItem('user_data', JSON.stringify({
+                        name: data.displayName || '',
+                        email: data.email,
+                        createdAt: new Date().toISOString()
+                    }));
+                    
                     // Ensure balance is initialized (for first-time login bonus)
                     ensureBalanceInitialized(data.uid);
                     
                     setTimeout(() => {
-                        window.location.href = 'index.html';
+                        window.location.href = 'dashboard.html';
                     }, 2000);
                 } else {
                     statusDiv.innerHTML = `<div class="error">✗ ${data.message}</div>`;

@@ -88,5 +88,15 @@
       }
     ],
     "lastUpdated": "2026-01-05T16:03:39.374Z"
+  },
+  {
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "balance": 10,
+    "currency": "GHS",
+    "withdrawable": 0.5,
+    "createdAt": "2026-02-23T15:26:20.693Z",
+    "lastUpdated": "2026-02-23T15:56:42.087Z",
+    "bonus": 10,
+    "bonusGivenAt": "2026-02-23T15:26:20.693Z"
   }
 ]

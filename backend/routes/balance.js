@@ -16,6 +16,31 @@ function ensureBalancesFile() {
 }
 
 /**
+ * Get all balances from file
+ */
+function getAllBalances() {
+    try {
+        ensureBalancesFile();
+        const data = fs.readFileSync(BALANCES_FILE, 'utf8');
+        return JSON.parse(data) || [];
+    } catch (err) {
+        console.error('[Balance] Error reading balances file:', err);
+        return [];
+    }
+}
+
+/**
+ * Save balances to file
+ */
+function saveBalances(balances) {
+    try {
+        fs.writeFileSync(BALANCES_FILE, JSON.stringify(balances, null, 2));
+    } catch (err) {
+        console.error('[Balance] Error writing balances file:', err);
+    }
+}
+
+/**
  * Diagnostic endpoint to verify balance routes are loaded
  */
 router.get('/status', (req, res) => {

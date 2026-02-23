@@ -1,0 +1,566 @@
+/* Dashboard JavaScript */
+
+// API Base URL
+const apiBase = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api'
+    : 'https://sikapa-bwxu.onrender.com/api';
+
+// Initialize Dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    if (!isUserLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+    }
+    loadUserProfile();
+    loadUserStats();
+    loadTransactions();
+    setInterval(loadUserStats, 10000);
+    setInterval(loadTransactions, 30000);
+});
+
+/**
+ * Switch Between Tabs
+ */
+function switchTab(tabId, element) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-pane').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Remove active from all nav items
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    // Show selected tab
+    document.getElementById(tabId).classList.add('active');
+    
+    // Add active to nav item
+    element.classList.add('active');
+    
+    // Load tier data when switching to quantify tab
+    if (tabId === 'quantify-tab') {
+        loadTiers();
+    }
+}
+
+/**
+ * Load User Profile
+ */
+async function loadUserProfile() {
+    try {
+        const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+        const authToken = localStorage.getItem('authToken') || localStorage.getItem('auth_token');
+        const userData = localStorage.getItem('user_data') ? JSON.parse(localStorage.getItem('user_data')) : {};
+
+        if (!userId) return;
+
+        // Update Home Tab
+        document.getElementById('userName').textContent = userData.name || 'User';
+        document.getElementById('userEmail').textContent = userData.email || '';
+
+        // Update Profile Tab
+        document.getElementById('profileName').textContent = userData.name || 'User Name';
+        document.getElementById('profileEmail').textContent = userData.email || 'user@example.com';
+        document.getElementById('infoEmail').textContent = userData.email || 'user@example.com';
+        document.getElementById('infoUserId').textContent = userId;
+
+        // Set member since date
+        const createdAt = new Date(userData.createdAt || new Date());
+        document.getElementById('infoMemberSince').textContent = createdAt.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Generate referral code and link
+        const referralCode = `SKP${userId.substring(0, 8).toUpperCase()}`;
+        document.getElementById('referralCode').textContent = referralCode;
+        
+        const referralLink = `${window.location.origin}?ref=${referralCode}`;
+        document.getElementById('referralLink').value = referralLink;
+
+    } catch (error) {
+        console.error('Error loading user profile:', error);
+    }
+}
+
+/**
+ * Load User Statistics
+ */
+async function loadUserStats() {
+    try {
+        const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+        const authToken = localStorage.getItem('authToken') || localStorage.getItem('auth_token');
+
+        if (!userId) return;
+
+        // Fetch user balance
+        const balanceResponse = await fetch(`${apiBase}/balance/user/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (balanceResponse.ok) {
+            const balanceData = await balanceResponse.json();
+            const balance = balanceData.balance || 0;
+
+            document.getElementById('homeBalance').textContent = balance.toFixed(2);
+            document.getElementById('profileTotalRevenue').textContent = balance.toFixed(2);
+        }
+
+        // Fetch user stats (commission today, today's earning, recharge amount, total revenue)
+        const statsResponse = await fetch(`${apiBase}/user/stats/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (statsResponse.ok) {
+            const statsData = await statsResponse.json();
+            
+            // Update all stat fields
+            const stats = statsData.stats || {};
+            
+            // Display total balance (account balance + withdrawable tier rewards)
+            document.getElementById('homeBalance').textContent = (stats.totalBalance || 0).toFixed(2);
+            document.getElementById('profileTotalRevenue').textContent = (stats.totalBalance || 0).toFixed(2);
+            
+            // Display withdrawable amount (tier rewards only)
+            if (document.getElementById('withdrawableAmount')) {
+                document.getElementById('withdrawableAmount').textContent = (stats.withdrawableAmount || 0).toFixed(2);
+            }
+            
+            // Display transaction statistics
+            document.getElementById('totalRevenue').textContent = (stats.totalRevenue || 0).toFixed(2);
+            document.getElementById('commissionToday').textContent = (stats.commissionToday || 0).toFixed(2);
+            document.getElementById('todayEarning').textContent = (stats.todayEarning || 0).toFixed(2);
+            document.getElementById('rechargeAmount').textContent = (stats.rechargeAmount || 0).toFixed(2);
+
+            // Update tier reward stats
+            if (document.getElementById('tierClaimedToday')) {
+                document.getElementById('tierClaimedToday').textContent = stats.tierClaimedToday || 0;
+            }
+            if (document.getElementById('tierEarnings')) {
+                document.getElementById('tierEarnings').textContent = (stats.totalTierEarnings || 0).toFixed(2);
+            }
+
+            // Update profile tab stats
+            document.getElementById('profileTotalRevenue').textContent = (stats.totalBalance || 0).toFixed(2);
+            document.getElementById('profileCommissionToday').textContent = (stats.commissionToday || 0).toFixed(2);
+            document.getElementById('profileTodayEarning').textContent = (stats.todayEarning || 0).toFixed(2);
+            document.getElementById('profileRechargeAmount').textContent = (stats.rechargeAmount || 0).toFixed(2);
+
+            // Update invite tab stats
+            document.getElementById('friendsInvited').textContent = stats.friendsInvited || 0;
+            document.getElementById('referralCommission').textContent = (stats.referralCommission || 0).toFixed(2);
+        }
+
+    } catch (error) {
+        console.error('Error loading user stats:', error);
+    }
+}
+
+/**
+ * Load Recent Transactions
+ */
+async function loadTransactions() {
+    try {
+        const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+        const authToken = localStorage.getItem('authToken') || localStorage.getItem('auth_token');
+
+        if (!userId) return;
+
+        const response = await fetch(`${apiBase}/transactions/user/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const transactionsData = await response.json();
+            const transactions = transactionsData.transactions || [];
+
+            const transactionsList = document.getElementById('transactionsList');
+            
+            if (transactions.length === 0) {
+                transactionsList.innerHTML = '<p class="no-data">No recent transactions</p>';
+                return;
+            }
+
+            transactionsList.innerHTML = transactions.slice(0, 5).map(transaction => `
+                <div class="transaction-item">
+                    <div class="transaction-details">
+                        <div class="transaction-icon" style="background: ${getTransactionColor(transaction.type)};">
+                            ${getTransactionIcon(transaction.type)}
+                        </div>
+                        <div class="transaction-text">
+                            <h4>${transaction.type}</h4>
+                            <p>${new Date(transaction.date).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                    <div class="transaction-amount" style="color: ${transaction.type === 'deposit' ? '#4CAF50' : '#FF6B6B'};">
+                        ${transaction.type === 'deposit' ? '+' : '-'}₵${transaction.amount.toFixed(2)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+    } catch (error) {
+        console.error('Error loading transactions:', error);
+    }
+}
+
+/**
+ * Get Transaction Color
+ */
+function getTransactionColor(type) {
+    const colors = {
+        'deposit': '#4CAF5033',
+        'withdraw': '#FF6B6B33',
+        'commission': '#667eea33',
+        'payment': '#f5576c33'
+    };
+    return colors[type] || '#99999933';
+}
+
+/**
+ * Get Transaction Icon
+ */
+function getTransactionIcon(type) {
+    const icons = {
+        'deposit': '💳',
+        'withdraw': '💸',
+        'commission': '🎁',
+        'payment': '💰'
+    };
+    return icons[type] || '📊';
+}
+
+/**
+ * Redirect to Deposit
+ */
+function redirectToDeposit() {
+    window.location.href = 'cashout.html';
+}
+
+/**
+ * Redirect to Withdraw
+ */
+function redirectToWithdraw() {
+    window.location.href = 'withdraw.html';
+}
+
+/**
+ * Copy Referral Code
+ */
+function copyReferralCode() {
+    const code = document.getElementById('referralCode').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        showNotification('Referral code copied!', 'success');
+    }).catch(() => {
+        showNotification('Failed to copy', 'error');
+    });
+}
+
+/**
+ * Copy Referral Link
+ */
+function copyReferralLink() {
+    const link = document.getElementById('referralLink').value;
+    navigator.clipboard.writeText(link).then(() => {
+        showNotification('Referral link copied!', 'success');
+    }).catch(() => {
+        showNotification('Failed to copy', 'error');
+    });
+}
+
+/**
+ * Share via WhatsApp
+ */
+function shareViaWhatsapp() {
+    const link = document.getElementById('referralLink').value;
+    const message = `Join Sikapa and start earning! ${link}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+}
+
+/**
+ * Share via Facebook
+ */
+function shareViaFacebook() {
+    const link = document.getElementById('referralLink').value;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`);
+}
+
+/**
+ * Share via Twitter
+ */
+function shareViaTwitter() {
+    const link = document.getElementById('referralLink').value;
+    const text = 'Join Sikapa and start earning!';
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`);
+}
+
+/**
+ * Handle Change Password
+ */
+function handleChangePassword() {
+    const newPassword = prompt('Enter new password:');
+    if (!newPassword) return;
+
+    const confirmPassword = prompt('Confirm new password:');
+    if (newPassword !== confirmPassword) {
+        showNotification('Passwords do not match', 'error');
+        return;
+    }
+
+    // Call password change endpoint
+    updateUserPassword(newPassword);
+}
+
+/**
+ * Update User Password
+ */
+async function updateUserPassword(newPassword) {
+    try {
+        const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+        const authToken = localStorage.getItem('authToken') || localStorage.getItem('auth_token');
+
+        const response = await fetch(`${apiBase}/user/change-password`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId,
+                newPassword
+            })
+        });
+
+        if (response.ok) {
+            showNotification('Password updated successfully', 'success');
+        } else {
+            showNotification('Failed to update password', 'error');
+        }
+
+    } catch (error) {
+        console.error('Error updating password:', error);
+        showNotification('Error updating password', 'error');
+    }
+}
+
+/**
+ * Load Tiers Data
+ */
+async function loadTiers() {
+    const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+    
+    try {
+        const response = await fetch(`${apiBase}/tiers/user/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch tiers');
+        
+        const tiers = await response.json();
+        displayTiers(tiers, userId);
+        loadWithdrawableAmount(userId);
+    } catch (error) {
+        console.error('Error loading tiers:', error);
+        document.getElementById('tiersList').innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load tiers</p>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Display Tier Cards
+ */
+function displayTiers(tiers, userId) {
+    const tiersList = document.getElementById('tiersList');
+    
+    if (!tiers || tiers.length === 0) {
+        tiersList.innerHTML = '<p>No tiers available</p>';
+        return;
+    }
+    
+    tiersList.innerHTML = tiers.map(tier => {
+        const isAccessible = tier.is_accessible;
+        const canClaim = tier.can_claim;
+        const lastClaim = tier.last_claim_time ? new Date(tier.last_claim_time) : null;
+        const nextClaim = tier.next_claim_time ? new Date(tier.next_claim_time) : null;
+        
+        let buttonHTML = '';
+        let statusClass = 'locked';
+        let statusText = 'LOCKED';
+        
+        if (!isAccessible) {
+            buttonHTML = `<button class="tier-action-btn tier-locked-btn" disabled>
+                LOCKED - Need ₵${tier.required_amount}
+            </button>`;
+            statusClass = 'locked';
+            statusText = 'LOCKED';
+        } else if (canClaim) {
+            buttonHTML = `<button class="tier-action-btn tier-claim-btn" onclick="claimTierReward(${tier.tier_id}, '${userId}')">
+                CLAIM ₵${tier.daily_reward} REWARD
+            </button>`;
+            statusClass = 'unlocked';
+            statusText = 'READY';
+        } else {
+            const timeRemaining = getTimeRemaining(nextClaim);
+            buttonHTML = `
+                <button class="tier-action-btn tier-cooldown-btn" disabled>
+                    CLAIMED - COOLDOWN
+                </button>
+                <div class="cooldown-timer">Available in ${timeRemaining}</div>
+            `;
+            statusClass = 'claimed';
+            statusText = 'CLAIMED';
+        }
+        
+        return `
+            <div class="tier-card tier-${tier.tier_id} ${statusClass}">
+                <div class="tier-card-header">
+                    <div class="tier-name">
+                        <div class="tier-icon">
+                            ${getTierIcon(tier.tier_id)}
+                        </div>
+                        <div class="tier-title">
+                            <h3>${tier.name} Tier</h3>
+                            <p>Tier ${tier.tier_id}</p>
+                        </div>
+                    </div>
+                    <div class="tier-status ${statusClass}">
+                        ${statusText}
+                    </div>
+                </div>
+                
+                <div class="tier-card-body">
+                    <div class="tier-requirements">
+                        <div class="requirement-box required">
+                            <div class="label">Required Balance</div>
+                            <div class="value">₵${tier.required_amount}</div>
+                        </div>
+                        <div class="requirement-box reward">
+                            <div class="label">Daily Reward</div>
+                            <div class="value">₵${tier.daily_reward}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${buttonHTML}
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Get Tier Icon
+ */
+function getTierIcon(tierId) {
+    const icons = {
+        0: '<i class="fas fa-star"></i>',
+        1: '<i class="fas fa-shield-alt"></i>',
+        2: '<i class="fas fa-crown"></i>',
+        3: '<i class="fas fa-gem"></i>',
+        4: '<i class="fas fa-trophy"></i>'
+    };
+    return icons[tierId] || '<i class="fas fa-star"></i>';
+}
+
+/**
+ * Get Time Remaining
+ */
+function getTimeRemaining(futureDate) {
+    if (!futureDate) return 'soon';
+    
+    const now = new Date();
+    const diff = futureDate - now;
+    
+    if (diff <= 0) return 'now';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    } else {
+        return `${minutes}m`;
+    }
+}
+
+/**
+ * Claim Tier Reward
+ */
+async function claimTierReward(tierId, userId) {
+    try {
+        const button = event.target;
+        button.disabled = true;
+        button.textContent = 'Processing...';
+        
+        const response = await fetch(`${apiBase}/tiers/claim/${userId}/${tierId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification(`Claimed ₵${data.reward} from ${data.tier} tier!`, 'success');
+            // Reload tiers to update the display
+            loadTiers();
+            loadWithdrawableAmount(userId);
+        } else {
+            showNotification(data.error || 'Failed to claim reward', 'error');
+            button.disabled = false;
+            button.textContent = `CLAIM ₵${data.reward} REWARD`;
+        }
+    } catch (error) {
+        console.error('Error claiming reward:', error);
+        showNotification('Error claiming reward', 'error');
+        if (event.target) {
+            event.target.disabled = false;
+        }
+    }
+}
+
+/**
+ * Load Withdrawable Amount
+ */
+async function loadWithdrawableAmount(userId) {
+    try {
+        const response = await fetch(`${apiBase}/tiers/withdrawable/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch withdrawable amount');
+        
+        const data = await response.json();
+        document.getElementById('withdrawableAmount').textContent = data.withdrawable.toFixed(2);
+    } catch (error) {
+        console.error('Error loading withdrawable amount:', error);
+        document.getElementById('withdrawableAmount').textContent = '0.00';
+    }
+}
+
+/**
+ * Handle Logout
+ */
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    }
+}
+
+/**
+ * Show Notification
+ */
+function showNotification(message, type = 'info') {
+    alert(message);
+}
+

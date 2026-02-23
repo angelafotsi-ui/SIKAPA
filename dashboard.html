@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="true">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    <title>Dashboard - Sikapa</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Tab Content Area -->
+        <main class="tab-content">
+            <!-- Home Tab -->
+            <div id="home-tab" class="tab-pane active">
+                <div class="home-header">
+                    <h1>Welcome, <span id="userName">User</span> 👋</h1>
+                    <p id="userEmail" class="email-display"></p>
+                </div>
+
+                <div class="balance-section">
+                    <div class="main-balance">
+                        <p class="label">Total Balance</p>
+                        <p class="amount">₵ <span id="homeBalance">0.00</span></p>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="action-btn deposit-btn" onclick="redirectToDeposit()">
+                        <i class="fas fa-plus"></i>
+                        <span>Deposit</span>
+                    </button>
+                    <button class="action-btn withdraw-btn" onclick="redirectToWithdraw()">
+                        <i class="fas fa-minus"></i>
+                        <span>Withdraw</span>
+                    </button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon revenue">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Total Revenue</p>
+                            <p class="stat-value">₵ <span id="totalRevenue">0.00</span></p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon commission">
+                            <i class="fas fa-gift"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Commission Today</p>
+                            <p class="stat-value">₵ <span id="commissionToday">0.00</span></p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon earning">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Today's Earning</p>
+                            <p class="stat-value">₵ <span id="todayEarning">0.00</span></p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon recharge">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Recharge Amount</p>
+                            <p class="stat-value">₵ <span id="rechargeAmount">0.00</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>Recent Transactions</h3>
+                    <div id="transactionsList" class="transactions-list">
+                        <p class="no-data">No recent transactions</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quantify/Task Tab -->
+            <div id="quantify-tab" class="tab-pane">
+                <div class="quantify-header">
+                    <h1>Quantify Tasks</h1>
+                    <p>Complete tasks and earn rewards through tiers</p>
+                </div>
+
+                <!-- Withdrawable Balance Card -->
+                <div class="withdrawable-balance-section">
+                    <div class="balance-card">
+                        <p class="label">Withdrawable Amount</p>
+                        <p class="amount">₵ <span id="withdrawableAmount">0.00</span></p>
+                    </div>
+
+                    <div class="task-stats">
+                        <div class="task-stat">
+                            <p class="label">Tier Claimed Today</p>
+                            <p class="value" id="tierClaimedToday">0</p>
+                        </div>
+                        <div class="task-stat">
+                            <p class="label">Total Tier Earnings</p>
+                            <p class="value">₵ <span id="tierEarnings">0.00</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tier Cards -->
+                <div class="tiers-container">
+                    <div id="tiersList" class="tiers-list">
+                        <!-- Tiers will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invite Friends Tab -->
+            <div id="invite-tab" class="tab-pane">
+                <div class="invite-header">
+                    <h1>Invite Friends</h1>
+                    <p>Earn commission from referrals</p>
+                </div>
+
+                <div class="referral-info">
+                    <div class="referral-code-box">
+                        <p class="label">Your Referral Code</p>
+                        <div class="code-display">
+                            <span id="referralCode">LOADING...</span>
+                            <button class="copy-btn" onclick="copyReferralCode()">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="referral-link-box">
+                        <p class="label">Referral Link</p>
+                        <div class="link-display">
+                            <input type="text" id="referralLink" readonly>
+                            <button class="copy-btn" onclick="copyReferralLink()">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="referral-stats">
+                    <div class="stat-box">
+                        <p class="label">Friends Invited</p>
+                        <p class="value" id="friendsInvited">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <p class="label">Commission Earned</p>
+                        <p class="value">₵ <span id="referralCommission">0.00</span></p>
+                    </div>
+                </div>
+
+                <div class="share-buttons">
+                    <button class="share-btn whatsapp" onclick="shareViaWhatsapp()">
+                        <i class="fab fa-whatsapp"></i> Share on WhatsApp
+                    </button>
+                    <button class="share-btn facebook" onclick="shareViaFacebook()">
+                        <i class="fab fa-facebook"></i> Share on Facebook
+                    </button>
+                    <button class="share-btn twitter" onclick="shareViaTwitter()">
+                        <i class="fab fa-twitter"></i> Share on Twitter
+                    </button>
+                </div>
+
+                <div class="referrals-list">
+                    <h3>Invited Friends</h3>
+                    <div id="referralsList" class="friends-list">
+                        <p class="no-data">No referrals yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Me/Profile Tab -->
+            <div id="me-tab" class="tab-pane">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="profile-name">
+                        <h1 id="profileName">User Name</h1>
+                        <p id="profileEmail">user@example.com</p>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn deposit-action" onclick="redirectToDeposit()">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Deposit</span>
+                    </button>
+                    <button class="action-btn withdraw-action" onclick="redirectToWithdraw()">
+                        <i class="fas fa-minus-circle"></i>
+                        <span>Withdraw</span>
+                    </button>
+                </div>
+
+                <div class="profile-stats">
+                    <div class="profile-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="stat-detail">
+                            <p class="label">Total Revenue</p>
+                            <p class="value">₵ <span id="profileTotalRevenue">0.00</span></p>
+                        </div>
+                    </div>
+
+                    <div class="profile-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-gift"></i>
+                        </div>
+                        <div class="stat-detail">
+                            <p class="label">Commission Today</p>
+                            <p class="value">₵ <span id="profileCommissionToday">0.00</span></p>
+                        </div>
+                    </div>
+
+                    <div class="profile-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="stat-detail">
+                            <p class="label">Today's Earning</p>
+                            <p class="value">₵ <span id="profileTodayEarning">0.00</span></p>
+                        </div>
+                    </div>
+
+                    <div class="profile-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="stat-detail">
+                            <p class="label">Recharge Amount</p>
+                            <p class="value">₵ <span id="profileRechargeAmount">0.00</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-info">
+                    <h3>Account Information</h3>
+                    <div class="info-item">
+                        <label>Email Address</label>
+                        <p id="infoEmail">user@example.com</p>
+                    </div>
+                    <div class="info-item">
+                        <label>User ID</label>
+                        <p id="infoUserId">-</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Member Since</label>
+                        <p id="infoMemberSince">-</p>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Settings</h3>
+                    <button class="settings-btn" onclick="handleChangePassword()">
+                        <i class="fas fa-key"></i>
+                        <span>Change Password</span>
+                    </button>
+                    <button class="settings-btn" onclick="handleLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Tab Navigation -->
+        <nav class="bottom-navigation">
+            <button class="nav-item active" data-tab="home-tab" onclick="switchTab('home-tab', this)">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" data-tab="quantify-tab" onclick="switchTab('quantify-tab', this)">
+                <i class="fas fa-tasks"></i>
+                <span>Tasks</span>
+            </button>
+            <button class="nav-item" data-tab="invite-tab" onclick="switchTab('invite-tab', this)">
+                <i class="fas fa-share-nodes"></i>
+                <span>Invite</span>
+            </button>
+            <button class="nav-item" data-tab="me-tab" onclick="switchTab('me-tab', this)">
+                <i class="fas fa-user"></i>
+                <span>Me</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
