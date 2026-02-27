@@ -539,7 +539,6 @@ async function loadTiers() {
         
         const tiers = await response.json();
         displayTiers(tiers, userId);
-        loadWithdrawableAmount(userId);
     } catch (error) {
         console.error('Error loading tiers:', error);
         document.getElementById('tiersList').innerHTML = `
@@ -700,9 +699,9 @@ async function claimTierReward(tierId, userId) {
         
         if (response.ok) {
             showNotification(`Claimed ₵${data.reward} from ${data.tier} tier!`, 'success');
-            // Reload tiers to update the display
+            // Reload stats and tiers to update the display
+            loadUserStats();
             loadTiers();
-            loadWithdrawableAmount(userId);
         } else {
             // Handle locked tier error
             if (data.locked_reason) {
@@ -720,53 +719,6 @@ async function claimTierReward(tierId, userId) {
         showNotification('Error claiming reward', 'error');
         if (event.target) {
             event.target.disabled = false;
-        }
-    }
-}
-
-/**
- * Load Withdrawable Amount (including tier rewards + referral commission)
- */
-async function loadWithdrawableAmount(userId) {
-    try {
-        const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3000/api'
-            : 'https://sikapa-bwxu.onrender.com/api';
-
-        // Fetch tier withdrawable amount and referral commission in parallel
-        const [tierResponse, referralResponse] = await Promise.all([
-            fetch(`${apiBase}/tiers/withdrawable/${userId}`),
-            fetch(`${apiBase}/user/referrals/${userId}`)
-        ]);
-
-        let totalWithdrawable = 0;
-        let tierWithdrawable = 0;
-        let referralCommission = 0;
-
-        // Get tier rewards withdrawable amount
-        if (tierResponse.ok) {
-            const tierData = await tierResponse.json();
-            tierWithdrawable = tierData.withdrawable || 0;
-        }
-
-        // Get referral commission
-        if (referralResponse.ok) {
-            const referralData = await referralResponse.json();
-            referralCommission = referralData.referrals?.commissionEarned || 0;
-        }
-
-        // Total withdrawable = tier rewards + referral commission
-        totalWithdrawable = tierWithdrawable + referralCommission;
-
-        if (document.getElementById('withdrawableAmount')) {
-            document.getElementById('withdrawableAmount').textContent = totalWithdrawable.toFixed(2);
-        }
-
-        console.log('[Dashboard] Withdrawable amount:', { tierWithdrawable, referralCommission, totalWithdrawable });
-    } catch (error) {
-        console.error('Error loading withdrawable amount:', error);
-        if (document.getElementById('withdrawableAmount')) {
-            document.getElementById('withdrawableAmount').textContent = '0.00';
         }
     }
 }

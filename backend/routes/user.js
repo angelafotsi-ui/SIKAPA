@@ -17,10 +17,10 @@ router.get('/stats/:userId', (req, res) => {
 
         // Initialize stats
         let stats = {
-            totalBalance: 0,           // user's deposit balance + withdrawable tier rewards
-            withdrawableAmount: 0,     // only tier rewards (claimed rewards)
+            totalBalance: 0,           // user's deposit balance + withdrawable tier rewards + referral commission
+            withdrawableAmount: 0,     // tier rewards + referral commission
             totalRevenue: 0,           // total tier rewards claimed (earning from tiers)
-            commissionToday: 0,        // tier rewards claimed today
+            commissionToday: 0,        // tier rewards claimed today + referral commission
             todayEarning: 0,           // tier rewards claimed today
             rechargeAmount: 0,         // total amount deposited by user (approved deposits only)
             friendsInvited: 0,
@@ -35,7 +35,7 @@ router.get('/stats/:userId', (req, res) => {
         // Track today's date for consistent comparisons
         const today = new Date().toDateString();
 
-        // Read user balance for total balance and withdrawable amount
+        // Read user balance for total balance and withdrawable amount (tier rewards)
         let userAccountBalance = 0;
         const balancePath = path.join(__dirname, '../logs/user_balances.json');
         if (fs.existsSync(balancePath)) {
@@ -210,12 +210,13 @@ router.get('/stats/:userId', (req, res) => {
             stats.friendsInvited = 0;
         }
 
-        // Add referral commission to total balance and commission today
+        // Add referral commission to total balance, commission today, and withdrawable amount
         stats.totalBalance = (stats.totalBalance || 0) + referralCommissionEarned;
         stats.commissionToday = (stats.commissionToday || 0) + referralCommissionEarned;
+        stats.withdrawableAmount = (stats.withdrawableAmount || 0) + referralCommissionEarned;
         stats.referralCommission = referralCommissionEarned;
 
-        console.log('[Stats] Final stats:', { totalBalance: stats.totalBalance, commissionToday: stats.commissionToday, referralCommission: stats.referralCommission });
+        console.log('[Stats] Final stats:', { totalBalance: stats.totalBalance, commissionToday: stats.commissionToday, withdrawableAmount: stats.withdrawableAmount, referralCommission: stats.referralCommission });
 
         res.json({
             success: true,
