@@ -111,25 +111,25 @@ router.post('/init/:userId', (req, res) => {
             });
         }
 
-        // Create new balance with GH 10 bonus
+        // Create new balance with 0 - no auto-credit
         const newBalance = {
             userId: userId,
-            balance: 10.00,
+            balance: 0,
             currency: 'GHS',
             createdAt: new Date().toISOString(),
             lastUpdated: new Date().toISOString(),
-            bonus: 10.00,
-            bonusGivenAt: new Date().toISOString()
+            deposited: 0,
+            withdrawable: 0
         };
 
         balances.push(newBalance);
         saveBalances(balances);
 
-        console.log(`[Balance] Created initial balance for user ${userId} with GH 10 bonus`);
+        console.log(`[Balance] Created initial balance for user ${userId} with no auto-credit`);
 
         res.json({
             success: true,
-            message: 'Initial balance created with GH 10 bonus',
+            message: 'Initial balance created',
             balance: newBalance.balance,
             userId: userId
         });
@@ -166,26 +166,26 @@ router.post('/ensure-initialized/:userId', (req, res) => {
             });
         }
 
-        // Create new balance with GH 10 bonus for first-time login
+        // Create new balance with 0 - no auto-credit
         const newBalance = {
             userId: userId,
-            balance: 10.00,
+            balance: 0,
             currency: 'GHS',
             createdAt: new Date().toISOString(),
             lastUpdated: new Date().toISOString(),
-            bonus: 10.00,
-            bonusGivenAt: new Date().toISOString()
+            deposited: 0,
+            withdrawable: 0
         };
 
         balances.push(newBalance);
         saveBalances(balances);
 
-        console.log(`[Balance] Ensured initial balance for user ${userId} with GH 10 bonus on first login`);
+        console.log(`[Balance] Ensured initial balance for user ${userId} with no auto-credit`);
 
         res.set('Content-Type', 'application/json');
         res.json({
             success: true,
-            message: 'User balance ensured with GH 10 welcome bonus',
+            message: 'User balance ensured (ready for deposits)',
             balance: newBalance.balance,
             userId: userId,
             isNew: true

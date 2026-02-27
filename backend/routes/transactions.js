@@ -3,7 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
-// Get user's last 5 transactions (combining cashout and withdraw requests)
+// Get user's last 5 transactions (combining cashout, withdraw, and deposit requests)
 router.get('/user/:userId', (req, res) => {
     try {
         const { userId } = req.params;
@@ -17,6 +17,7 @@ router.get('/user/:userId', (req, res) => {
 
         const cashoutPath = path.join(__dirname, '../logs/cashout_requests.json');
         const withdrawPath = path.join(__dirname, '../logs/withdraw_requests.json');
+        const depositPath = path.join(__dirname, '../logs/deposit_requests.json');
 
         let allTransactions = [];
 
@@ -58,6 +59,28 @@ router.get('/user/:userId', (req, res) => {
                         walletId: w.walletId,
                         walletNetwork: w.walletNetwork,
                         walletIdName: w.walletIdName
+                    }
+                }))
+            );
+        }
+
+        // Read deposit requests
+        if (fs.existsSync(depositPath)) {
+            const depositData = fs.readFileSync(depositPath, 'utf-8');
+            const deposits = JSON.parse(depositData || '[]');
+            
+            allTransactions.push(...deposits
+                .filter(d => d.userId === userId)
+                .map(d => ({
+                    id: d.id,
+                    type: 'deposit',
+                    amount: parseFloat(d.amount),
+                    status: d.status || 'pending',
+                    createdAt: d.createdAt,
+                    details: {
+                        senderName: d.senderName,
+                        momoNumber: d.momoNumber,
+                        screenshot: d.screenshotPath
                     }
                 }))
             );
@@ -118,33 +141,90 @@ router.post('/update-status', (req, res) => {
         const fileData = fs.readFileSync(filePath, 'utf-8');
         const transactions = JSON.parse(fileData || '[]');
 
-        // Find and update the transaction
-        let found = false;
-        const updatedTransactions = transactions.map(transaction => {
-            if (transaction.userId === userId && transaction.createdAt === createdAt) {
-                transaction.status = status;
-                transaction.updatedAt = new Date().toISOString();
-                found = true;
-            }
-            return transaction;
-        });
-
-        if (!found) {
+        // Find the transaction to get its amount
+        const transactionIndex = transactions.findIndex(t => t.userId === userId && t.createdAt === createdAt);
+        
+        if (transactionIndex === -1) {
             return res.status(404).json({
                 success: false,
                 message: 'Transaction not found'
             });
         }
 
+        const transaction = transactions[transactionIndex];
+
+        // Update transaction status and timestamp
+        transaction.status = status;
+        transaction.updatedAt = new Date().toISOString();
+
+        // If approved, debit the amount from user's balance and withdrawable amount
+        if (status === 'approved') {
+            const balanceFile = path.join(__dirname, '../logs/user_balances.json');
+            const tierEarningsFile = path.join(__dirname, '../logs/tier_earnings.json');
+            
+            if (fs.existsSync(balanceFile)) {
+                try {
+                    let balances = JSON.parse(fs.readFileSync(balanceFile, 'utf8'));
+                    const userBalanceIndex = balances.findIndex(b => b.userId === userId);
+
+                    if (userBalanceIndex !== -1) {
+                        const userBalance = balances[userBalanceIndex];
+                        const requestAmount = parseFloat(transaction.amount);
+
+                        // Deduct from balance and withdrawable
+                        userBalance.balance = Math.max(0, userBalance.balance - requestAmount);
+                        userBalance.withdrawable = Math.max(0, userBalance.withdrawable - requestAmount);
+                        userBalance.lastUpdated = new Date().toISOString();
+
+                        // Save updated balance
+                        fs.writeFileSync(balanceFile, JSON.stringify(balances, null, 2));
+
+                        console.log(`[Transactions] ${type} approved and balance debited:`, {
+                            userId,
+                            amount: requestAmount,
+                            type,
+                            newBalance: userBalance.balance,
+                            newWithdrawable: userBalance.withdrawable
+                        });
+                    }
+                } catch (e) {
+                    console.error('[Transactions] Error updating user balance:', e);
+                    // Continue even if balance update fails
+                }
+            }
+
+            // For withdrawals, also update tier_earnings.json to track withdrawn amount
+            if (type === 'withdraw' && fs.existsSync(tierEarningsFile)) {
+                try {
+                    let tierEarnings = JSON.parse(fs.readFileSync(tierEarningsFile, 'utf8'));
+                    
+                    if (tierEarnings[userId]) {
+                        const requestAmount = parseFloat(transaction.amount);
+                        tierEarnings[userId].withdrawn = (tierEarnings[userId].withdrawn || 0) + requestAmount;
+                        
+                        fs.writeFileSync(tierEarningsFile, JSON.stringify(tierEarnings, null, 2));
+                        
+                        console.log(`[Transactions] Updated tier_earnings withdrawn amount for user ${userId}:`, {
+                            amount: requestAmount,
+                            totalWithdrawn: tierEarnings[userId].withdrawn
+                        });
+                    }
+                } catch (e) {
+                    console.error('[Transactions] Error updating tier earnings:', e);
+                    // Continue even if tier earnings update fails
+                }
+            }
+        }
+
         // Write updated transactions back to file
-        fs.writeFileSync(filePath, JSON.stringify(updatedTransactions, null, 2));
+        fs.writeFileSync(filePath, JSON.stringify(transactions, null, 2));
 
         console.log(`[Transactions] Updated ${type} transaction status for user ${userId} to ${status}`);
 
         res.json({
             success: true,
             message: `Transaction status updated to ${status}`,
-            transaction: updatedTransactions.find(t => t.userId === userId && t.createdAt === createdAt)
+            transaction: transactions[transactionIndex]
         });
 
     } catch (error) {

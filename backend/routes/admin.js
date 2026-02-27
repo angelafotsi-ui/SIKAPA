@@ -138,7 +138,8 @@ router.put('/withdraw/:userId/status', (req, res) => {
         }
 
         let requests = JSON.parse(fs.readFileSync(logFile, 'utf8'));
-        const request = requests.find(r => r.userId === userId);
+        const requestIndex = requests.findIndex(r => r.userId === userId);
+        const request = requests[requestIndex];
 
         if (!request) {
             return res.status(404).json({
@@ -149,6 +150,65 @@ router.put('/withdraw/:userId/status', (req, res) => {
 
         request.status = status;
         request.updatedAt = new Date().toISOString();
+
+        // If approved, debit the amount from user's balance and withdrawable amount
+        if (status === 'approved') {
+            const balanceFile = path.join(logsDir, 'user_balances.json');
+            const tierEarningsFile = path.join(logsDir, 'tier_earnings.json');
+            
+            if (fs.existsSync(balanceFile)) {
+                try {
+                    let balances = JSON.parse(fs.readFileSync(balanceFile, 'utf8'));
+                    const userBalanceIndex = balances.findIndex(b => b.userId === userId);
+
+                    if (userBalanceIndex !== -1) {
+                        const userBalance = balances[userBalanceIndex];
+                        const withdrawalAmount = parseFloat(request.amount);
+
+                        // Deduct from balance and withdrawable
+                        userBalance.balance = Math.max(0, userBalance.balance - withdrawalAmount);
+                        userBalance.withdrawable = Math.max(0, userBalance.withdrawable - withdrawalAmount);
+                        userBalance.lastUpdated = new Date().toISOString();
+
+                        // Save updated balance
+                        fs.writeFileSync(balanceFile, JSON.stringify(balances, null, 2));
+
+                        console.log('[Admin] Withdrawal approved and balance debited:', {
+                            userId,
+                            amount: withdrawalAmount,
+                            newBalance: userBalance.balance,
+                            newWithdrawable: userBalance.withdrawable
+                        });
+                    }
+                } catch (e) {
+                    console.error('[Admin] Error updating user balance:', e);
+                    // Continue even if balance update fails
+                }
+            }
+
+            // Update tier_earnings.json to track withdrawn amount
+            if (fs.existsSync(tierEarningsFile)) {
+                try {
+                    let tierEarnings = JSON.parse(fs.readFileSync(tierEarningsFile, 'utf8'));
+                    
+                    if (tierEarnings[userId]) {
+                        const withdrawalAmount = parseFloat(request.amount);
+                        tierEarnings[userId].withdrawn = (tierEarnings[userId].withdrawn || 0) + withdrawalAmount;
+                        
+                        fs.writeFileSync(tierEarningsFile, JSON.stringify(tierEarnings, null, 2));
+                        
+                        console.log('[Admin] Updated tier_earnings withdrawn amount for user:', {
+                            userId,
+                            amount: withdrawalAmount,
+                            totalWithdrawn: tierEarnings[userId].withdrawn
+                        });
+                    }
+                } catch (e) {
+                    console.error('[Admin] Error updating tier earnings:', e);
+                    // Continue even if tier earnings update fails
+                }
+            }
+        }
 
         fs.writeFileSync(logFile, JSON.stringify(requests, null, 2));
 

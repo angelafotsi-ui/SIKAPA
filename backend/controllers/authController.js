@@ -23,9 +23,9 @@ exports.signup = async (req, res, next) => {
       });
     }
 
-    const { email, password, name } = req.body;
+    const { email, password, name, referralCode } = req.body;
 
-    console.log('[Signup] Received signup request:', { email, name });
+    console.log('[Signup] Received signup request:', { email, name, referralCode });
 
     if (!email || !password || !name) {
       return res.status(400).json({
@@ -65,17 +65,52 @@ exports.signup = async (req, res, next) => {
       // Don't fail signup if balance init fails, just log it
     }
 
+    // Handle referral tracking
+    if (referralCode) {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        
+        const referralsFile = path.join(__dirname, '../logs/referrals.json');
+        let referrals = {};
+        
+        if (fs.existsSync(referralsFile)) {
+          referrals = JSON.parse(fs.readFileSync(referralsFile, 'utf8'));
+        }
+        
+        // Create referral record
+        if (!referrals[referralCode]) {
+          referrals[referralCode] = {
+            referredUsers: []
+          };
+        }
+        
+        referrals[referralCode].referredUsers.push({
+          userId: userRecord.uid,
+          email: email,
+          name: name,
+          signupDate: new Date().toISOString()
+        });
+        
+        fs.writeFileSync(referralsFile, JSON.stringify(referrals, null, 2));
+        
+        console.log('[Signup] Referral recorded:', { newUserId: userRecord.uid, referralCode });
+      } catch (referralError) {
+        console.error('[Signup] Error recording referral:', referralError.message);
+        // Don't fail signup if referral tracking fails
+      }
+    }
+
     // Create custom token for immediate login
     const customToken = await auth.createCustomToken(userRecord.uid);
 
     res.json({
       success: true,
-      message: 'User created successfully with GH 10 welcome bonus!',
+      message: 'User created successfully!',
       uid: userRecord.uid,
       email: userRecord.email,
       displayName: name,
-      customToken: customToken,
-      bonus: 10.00
+      customToken: customToken
     });
   } catch (error) {
     console.error('[Signup] Error:', error.message);

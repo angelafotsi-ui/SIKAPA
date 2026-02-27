@@ -34,7 +34,7 @@
             // Check if user is admin
             if (!isUserAdmin()) {
                 console.log('[Admin] User is not admin, redirecting to home');
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
                 return;
             }
             
@@ -544,6 +544,7 @@
             <h2>💎 SIKAPA Admin</h2>
             <ul class="sidebar-menu">
                 <li><button class="menu-btn active" data-section="dashboard">Dashboard</button></li>
+                <li><button class="menu-btn" data-section="deposits">Deposits</button></li>
                 <li><button class="menu-btn" data-section="withdrawals">Withdrawals</button></li>
                 <li><button class="menu-btn" data-section="cashouts">Cashouts</button></li>
                 <li><button class="menu-btn" data-section="users">Users</button></li>
@@ -570,6 +571,14 @@
             <div id="dashboard" class="section active">
                 <div class="stats-grid">
                     <div class="stat-card">
+                        <h3>Total Deposits</h3>
+                        <div class="number" id="total-deposits">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pending Deposits</h3>
+                        <div class="number" id="pending-deposits">0</div>
+                    </div>
+                    <div class="stat-card">
                         <h3>Total Withdrawals</h3>
                         <div class="number" id="total-withdrawals">0</div>
                     </div>
@@ -592,6 +601,27 @@
                     <div class="stat-card">
                         <h3>Total Transactions</h3>
                         <div class="number" id="total-transactions">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposits Section -->
+            <div id="deposits" class="section">
+                <div class="filter-section">
+                    <label>Filter by Status:</label>
+                    <select id="deposit-filter">
+                        <option value="">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="requests-table">
+                    <div class="table-header">
+                        <h2>Deposit Requests</h2>
+                    </div>
+                    <div id="deposits-container">
+                        <div class="loading">Loading deposits...</div>
                     </div>
                 </div>
             </div>
@@ -705,6 +735,10 @@
             document.getElementById('cashout-filter').addEventListener('change', function() {
                 loadCashouts(this.value);
             });
+
+            document.getElementById('deposit-filter').addEventListener('change', function() {
+                loadDeposits(this.value);
+            });
         }
 
         function toggleSidebar() {
@@ -744,6 +778,7 @@
             // Update section title
             const titles = {
                 dashboard: 'Dashboard',
+                deposits: 'Deposit Requests',
                 withdrawals: 'Withdrawal Requests',
                 cashouts: 'Cashout Requests',
                 users: 'Users',
@@ -758,7 +793,8 @@
             document.getElementById(section).classList.add('active');
 
             // Load data
-            if (section === 'withdrawals') loadWithdrawals();
+            if (section === 'deposits') loadDeposits();
+            else if (section === 'withdrawals') loadWithdrawals();
             else if (section === 'cashouts') loadCashouts();
             else if (section === 'users') loadUsers();
             else if (section === 'transactions') loadTransactions();
@@ -782,18 +818,22 @@
         async function loadDashboardData() {
             try {
                 const apiBase = getApiBase();
-                const [withdraws, cashouts, users, transactions] = await Promise.all([
+                const [deposits, withdraws, cashouts, users, transactions] = await Promise.all([
+                    fetch(`${apiBase}/deposit/all`).then(r => r.json()),
                     fetch(`${apiBase}/withdraw/requests`).then(r => r.json()),
                     fetch(`${apiBase}/cashout/requests`).then(r => r.json()),
                     fetch(`${apiBase}/admin/users`).then(r => r.json()),
                     fetch(`${apiBase}/admin/transactions`).then(r => r.json())
                 ]);
 
+                const depositData = deposits.deposits || [];
                 const withdrawData = withdraws.requests || [];
                 const cashoutData = cashouts.requests || [];
                 const usersData = users.users || [];
                 const transData = transactions.transactions || [];
 
+                document.getElementById('total-deposits').textContent = depositData.length;
+                document.getElementById('pending-deposits').textContent = depositData.filter(d => d.status === 'pending').length;
                 document.getElementById('total-withdrawals').textContent = withdrawData.length;
                 document.getElementById('pending-withdrawals').textContent = withdrawData.filter(w => w.status === 'pending').length;
                 document.getElementById('total-cashouts').textContent = cashoutData.length;
@@ -802,6 +842,131 @@
                 document.getElementById('total-transactions').textContent = transData.length;
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        async function loadDeposits(filter = '') {
+            try {
+                const response = await fetch(`${getApiBase()}/deposit/all`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                let deposits = data.deposits || [];
+
+                if (filter) {
+                    deposits = deposits.filter(d => d.status === filter);
+                }
+
+                const html = deposits.length ? `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User ID</th>
+                                <th>Sender Name</th>
+                                <th>Sender Number</th>
+                                <th>Amount (₵)</th>
+                                <th>Screenshot</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${deposits.map(deposit => `
+                                <tr>
+                                    <td>${deposit.id ? deposit.id.substring(0, 12) : 'N/A'}...</td>
+                                    <td>${deposit.userId ? deposit.userId.substring(0, 8) : 'N/A'}...</td>
+                                    <td>${deposit.senderName || 'N/A'}</td>
+                                    <td>${deposit.senderNumber || 'N/A'}</td>
+                                    <td>${deposit.amount ? parseFloat(deposit.amount).toFixed(2) : '0.00'}</td>
+                                    <td>${deposit.screenshotPath ? `<a href="${getApiBase()}/deposit/screenshot/${deposit.screenshotPath}" target="_blank" style="color: #3498db; text-decoration: none;">View</a>` : 'N/A'}</td>
+                                    <td><span class="status-badge status-${deposit.status || 'pending'}">${deposit.status || 'pending'}</span></td>
+                                    <td>${new Date(deposit.createdAt).toLocaleDateString()}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-view" onclick="viewDetail('deposit', '${JSON.stringify(deposit).replace(/'/g, "\\'")}')">View</button>
+                                            ${deposit.status === 'pending' ? `
+                                                <button class="btn btn-approve" onclick="approveDeposit('${deposit.id}', '${deposit.userId}', ${deposit.amount})">Approve</button>
+                                                <button class="btn btn-reject" onclick="rejectDeposit('${deposit.id}', '${deposit.userId}')">Reject</button>
+                                            ` : ''}
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : '<div class="empty-state"><p>No deposit requests found</p></div>';
+
+                document.getElementById('deposits-container').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading deposits:', error);
+                document.getElementById('deposits-container').innerHTML = '<div class="empty-state"><p>Error loading deposits: ' + error.message + '</p></div>';
+            }
+        }
+
+        async function approveDeposit(depositId, userId, amount) {
+            if (!confirm(`Approve deposit of ₵${amount.toFixed(2)} for user ${userId.substring(0, 8)}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${getApiBase()}/deposit/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('auth_token')}`
+                    },
+                    body: JSON.stringify({
+                        depositId: depositId,
+                        adminEmail: localStorage.getItem('adminEmail') || 'admin@sikapa.com'
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Deposit approved successfully!');
+                    loadDeposits();
+                    loadDashboardData();
+                } else {
+                    alert('Error approving deposit: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error approving deposit:', error);
+                alert('Error approving deposit: ' + error.message);
+            }
+        }
+
+        async function rejectDeposit(depositId, userId) {
+            const reason = prompt('Enter rejection reason:');
+            if (!reason) return;
+
+            try {
+                const response = await fetch(`${getApiBase()}/deposit/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('auth_token')}`
+                    },
+                    body: JSON.stringify({
+                        depositId: depositId,
+                        rejectionReason: reason,
+                        adminEmail: localStorage.getItem('adminEmail') || 'admin@sikapa.com'
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Deposit rejected successfully!');
+                    loadDeposits();
+                    loadDashboardData();
+                } else {
+                    alert('Error rejecting deposit: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error rejecting deposit:', error);
+                alert('Error rejecting deposit: ' + error.message);
             }
         }
 
@@ -964,7 +1129,7 @@
                         </thead>
                         <tbody>
                             ${users.map(user => `
-                                <tr>
+                                <tr class="user-row clickable" data-user-id="${user.uid}" onclick="toggleUserDetails('${user.uid}', '${user.email}', '${user.displayName || 'N/A'}', event)">
                                     <td>${user.uid ? user.uid.substring(0, 8) : 'N/A'}...</td>
                                     <td>${user.email}</td>
                                     <td>${user.displayName || 'N/A'}</td>
@@ -972,7 +1137,14 @@
                                     <td>${new Date(user.createdAt || user.metadata?.creationTime).toLocaleDateString()}</td>
                                     <td><span class="status-badge status-completed">${user.disabled ? 'Disabled' : 'Active'}</span></td>
                                     <td>
-                                        <button class="btn btn-small" onclick="openFundModal('${user.uid}', '${user.email}')">Manage Funds</button>
+                                        <button class="btn btn-small" onclick="openFundModal('${user.uid}', '${user.email}'); event.stopPropagation();">Manage Funds</button>
+                                    </td>
+                                </tr>
+                                <tr class="user-details-row" id="details-${user.uid}" style="display: none;">
+                                    <td colspan="7">
+                                        <div class="user-details-dropdown" id="dropdown-${user.uid}">
+                                            <div class="loading">Loading user details...</div>
+                                        </div>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -981,9 +1153,207 @@
                 ` : '<div class="empty-state"><p>No users found</p></div>';
 
                 document.getElementById('users-container').innerHTML = html;
+                
+                // Add CSS for clickable rows
+                if (!document.getElementById('user-row-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'user-row-styles';
+                    style.textContent = `
+                        .user-row.clickable {
+                            cursor: pointer;
+                            user-select: none;
+                        }
+                        .user-row.clickable:hover {
+                            background: #f5f5f5;
+                        }
+                        .user-details-row {
+                            transition: all 0.3s ease;
+                        }
+                        .user-details-dropdown {
+                            padding: 20px;
+                            background: #f9f9f9;
+                            border-radius: 8px;
+                            border: 1px solid #f0f0f0;
+                        }
+                        .user-details-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 15px;
+                            margin-bottom: 15px;
+                        }
+                        .user-detail-item {
+                            padding: 12px;
+                            background: white;
+                            border-radius: 6px;
+                            border: 1px solid #e0e0e0;
+                        }
+                        .user-detail-label {
+                            font-size: 12px;
+                            color: #666;
+                            font-weight: 500;
+                            margin-bottom: 4px;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+                        .user-detail-value {
+                            font-size: 18px;
+                            font-weight: 700;
+                            color: #1a1a1a;
+                        }
+                        .user-detail-value.currency {
+                            color: #667eea;
+                        }
+                        .user-detail-code {
+                            font-family: monospace;
+                            background: #f0f0f0;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            font-size: 12px;
+                        }
+                        .referred-users-section {
+                            margin-top: 15px;
+                            padding-top: 15px;
+                            border-top: 1px solid #e0e0e0;
+                        }
+                        .referred-users-list {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 8px;
+                        }
+                        .referred-user-item {
+                            padding: 10px;
+                            background: white;
+                            border: 1px solid #e0e0e0;
+                            border-radius: 6px;
+                            font-size: 13px;
+                        }
+                        .referred-user-email {
+                            color: #666;
+                            font-size: 12px;
+                        }
+                        @media (max-width: 768px) {
+                            .user-details-grid {
+                                grid-template-columns: 1fr;
+                            }
+                            .user-details-dropdown {
+                                padding: 15px;
+                            }
+                            .user-detail-item {
+                                padding: 10px;
+                            }
+                            .user-detail-value {
+                                font-size: 16px;
+                            }
+                        }
+                        @media (max-width: 480px) {
+                            .user-details-dropdown {
+                                padding: 12px;
+                                border-radius: 6px;
+                            }
+                            .user-detail-label {
+                                font-size: 11px;
+                            }
+                            .user-detail-value {
+                                font-size: 14px;
+                            }
+                            .user-detail-item {
+                                padding: 8px;
+                                margin-bottom: 5px;
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
             } catch (error) {
                 console.error('Error loading users:', error);
                 document.getElementById('users-container').innerHTML = '<div class="empty-state"><p>Error loading users</p></div>';
+            }
+        }
+
+        async function toggleUserDetails(userId, userEmail, userName, event) {
+            const detailsRow = document.getElementById(`details-${userId}`);
+            const dropdown = document.getElementById(`dropdown-${userId}`);
+            
+            // Toggle visibility
+            if (detailsRow.style.display === 'none') {
+                detailsRow.style.display = 'table-row';
+                await loadUserDetails(userId, dropdown);
+            } else {
+                detailsRow.style.display = 'none';
+            }
+        }
+
+        async function loadUserDetails(userId, dropdownElement) {
+            try {
+                const apiBase = getApiBase();
+                
+                // Fetch both stats and referrals in parallel
+                const [statsResponse, referralsResponse] = await Promise.all([
+                    fetch(`${apiBase}/user/stats/${userId}`),
+                    fetch(`${apiBase}/user/referrals/${userId}`)
+                ]);
+                
+                const statsData = await statsResponse.json();
+                const referralsData = await referralsResponse.json();
+                
+                const stats = statsData.stats || {};
+                const referrals = referralsData.referrals || {};
+
+                const html = `
+                    <div class="user-details-grid">
+                        <div class="user-detail-item">
+                            <div class="user-detail-label">Referral Code</div>
+                            <div class="user-detail-value user-detail-code">${referrals.referralCode || 'N/A'}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <div class="user-detail-label">Total Revenue</div>
+                            <div class="user-detail-value currency">GH₵ ${(stats.totalRevenue || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <div class="user-detail-label">Today's Earning</div>
+                            <div class="user-detail-value currency">GH₵ ${(stats.todayEarning || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <div class="user-detail-label">Commission Today</div>
+                            <div class="user-detail-value currency">GH₵ ${(stats.commissionToday || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <div class="user-detail-label">Recharge Amount</div>
+                            <div class="user-detail-value currency">GH₵ ${(stats.rechargeAmount || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <div class="user-detail-label">Friends Invited</div>
+                            <div class="user-detail-value">${referrals.friendsInvited || 0}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <div class="user-detail-label">Commission Earned (Referrals)</div>
+                            <div class="user-detail-value currency">GH₵ ${(referrals.commissionEarned || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="user-detail-item">
+                            <div class="user-detail-label">Total Balance</div>
+                            <div class="user-detail-value currency">GH₵ ${(stats.totalBalance || 0).toFixed(2)}</div>
+                        </div>
+                    </div>
+                    ${referrals.referredUsers && referrals.referredUsers.length > 0 ? `
+                        <div class="referred-users-section">
+                            <div class="user-detail-label">Referred Friends</div>
+                            <div class="referred-users-list">
+                                ${referrals.referredUsers.map(user => `
+                                    <div class="referred-user-item">
+                                        <strong>${user.name}</strong>
+                                        <div class="referred-user-email">${user.email}</div>
+                                        <div class="referred-user-email">Joined: ${new Date(user.signupDate).toLocaleDateString()}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+                
+                dropdownElement.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading user details:', error);
+                dropdownElement.innerHTML = '<div class="error"><p>Error loading user details. Please try again.</p></div>';
             }
         }
 

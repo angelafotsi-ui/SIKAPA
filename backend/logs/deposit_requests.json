@@ -1,0 +1,49 @@
+[
+  {
+    "id": "deposit_aU1rCqPO3SclZfIqbQMOKr7h2H02_1772188981189",
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "senderName": "ANSON JEFF",
+    "amount": 250,
+    "momoNumber": "0553843255",
+    "momoName": "Emmanuel Mawufemor",
+    "screenshotPath": "aU1rCqPO3SclZfIqbQMOKr7h2H02_1772188981188_anker-prime-20000mah.jpg",
+    "screenshotSize": 212947,
+    "status": "approved",
+    "createdAt": "2026-02-27T10:43:01.189Z",
+    "approvedAt": "2026-02-27T11:08:25.301Z",
+    "approvedBy": "admin@sikapa.com",
+    "rejectionReason": null
+  },
+  {
+    "id": "deposit_aU1rCqPO3SclZfIqbQMOKr7h2H02_1772197834570",
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "senderName": "ANSON JEFF",
+    "senderNumber": "0545327880",
+    "amount": 100,
+    "momoNumber": "0553843255",
+    "momoName": "Emmanuel Mawufemor",
+    "screenshotPath": "aU1rCqPO3SclZfIqbQMOKr7h2H02_1772197834568_adobestock-323405056.jpg",
+    "screenshotSize": 150026,
+    "status": "approved",
+    "createdAt": "2026-02-27T13:10:34.570Z",
+    "approvedAt": "2026-02-27T13:10:59.731Z",
+    "approvedBy": "admin@sikapa.com",
+    "rejectionReason": null
+  },
+  {
+    "id": "deposit_ItgHrMd36OfNSLAT8yzID0JOQ9h2_1772213457511",
+    "userId": "ItgHrMd36OfNSLAT8yzID0JOQ9h2",
+    "senderName": "ANSON JEFFss",
+    "senderNumber": "0545327880",
+    "amount": 250,
+    "momoNumber": "0553843255",
+    "momoName": "Emmanuel Mawufemor",
+    "screenshotPath": "ItgHrMd36OfNSLAT8yzID0JOQ9h2_1772213457499_frankfurt-main-germany-april-1-600nw-2566942347.jpg",
+    "screenshotSize": 25058,
+    "status": "approved",
+    "createdAt": "2026-02-27T17:30:57.511Z",
+    "approvedAt": "2026-02-27T17:31:24.375Z",
+    "approvedBy": "admin@sikapa.com",
+    "rejectionReason": null
+  }
+]

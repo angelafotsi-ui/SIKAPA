@@ -14,8 +14,10 @@ document.addEventListener('DOMContentLoaded', function() {
     loadUserProfile();
     loadUserStats();
     loadTransactions();
+    loadReferralStats();
     setInterval(loadUserStats, 10000);
     setInterval(loadTransactions, 30000);
+    setInterval(loadReferralStats, 30000);
 });
 
 /**
@@ -51,22 +53,23 @@ async function loadUserProfile() {
     try {
         const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
         const authToken = localStorage.getItem('authToken') || localStorage.getItem('auth_token');
-        const userData = localStorage.getItem('user_data') ? JSON.parse(localStorage.getItem('user_data')) : {};
+        const userName = localStorage.getItem('user_name') || 'User';
+        const userEmail = localStorage.getItem('user_email') || '';
 
         if (!userId) return;
 
         // Update Home Tab
-        document.getElementById('userName').textContent = userData.name || 'User';
-        document.getElementById('userEmail').textContent = userData.email || '';
+        document.getElementById('userName').textContent = userName;
+        document.getElementById('userEmail').textContent = userEmail;
 
         // Update Profile Tab
-        document.getElementById('profileName').textContent = userData.name || 'User Name';
-        document.getElementById('profileEmail').textContent = userData.email || 'user@example.com';
-        document.getElementById('infoEmail').textContent = userData.email || 'user@example.com';
+        document.getElementById('profileName').textContent = userName || 'User Name';
+        document.getElementById('profileEmail').textContent = userEmail || 'user@example.com';
+        document.getElementById('infoEmail').textContent = userEmail || 'user@example.com';
         document.getElementById('infoUserId').textContent = userId;
 
         // Set member since date
-        const createdAt = new Date(userData.createdAt || new Date());
+        const createdAt = new Date();
         document.getElementById('infoMemberSince').textContent = createdAt.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -79,6 +82,9 @@ async function loadUserProfile() {
         
         const referralLink = `${window.location.origin}?ref=${referralCode}`;
         document.getElementById('referralLink').value = referralLink;
+
+        // Show admin button if user is admin
+        showAdminButtonIfAdmin();
 
     } catch (error) {
         console.error('Error loading user profile:', error);
@@ -154,9 +160,7 @@ async function loadUserStats() {
             document.getElementById('profileTodayEarning').textContent = (stats.todayEarning || 0).toFixed(2);
             document.getElementById('profileRechargeAmount').textContent = (stats.rechargeAmount || 0).toFixed(2);
 
-            // Update invite tab stats
-            document.getElementById('friendsInvited').textContent = stats.friendsInvited || 0;
-            document.getElementById('referralCommission').textContent = (stats.referralCommission || 0).toFixed(2);
+            // Note: friendsInvited and referralCommission are now handled by loadReferralStats()
         }
 
     } catch (error) {
@@ -192,26 +196,156 @@ async function loadTransactions() {
                 return;
             }
 
-            transactionsList.innerHTML = transactions.slice(0, 5).map(transaction => `
+            transactionsList.innerHTML = transactions.slice(0, 5).map(transaction => {
+                const date = new Date(transaction.createdAt || transaction.date);
+                const statusColor = getStatusColor(transaction.status);
+                const displayType = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                
+                return `
                 <div class="transaction-item">
                     <div class="transaction-details">
                         <div class="transaction-icon" style="background: ${getTransactionColor(transaction.type)};">
                             ${getTransactionIcon(transaction.type)}
                         </div>
                         <div class="transaction-text">
-                            <h4>${transaction.type}</h4>
-                            <p>${new Date(transaction.date).toLocaleDateString()}</p>
+                            <h4>${displayType} <span style="font-size: 0.8rem; color: ${statusColor}; font-weight: 600; text-transform: uppercase;">${transaction.status}</span></h4>
+                            <p>${date.toLocaleDateString()}</p>
                         </div>
                     </div>
-                    <div class="transaction-amount" style="color: ${transaction.type === 'deposit' ? '#4CAF50' : '#FF6B6B'};">
-                        ${transaction.type === 'deposit' ? '+' : '-'}₵${transaction.amount.toFixed(2)}
+                    <div class="transaction-amount" style="color: ${transaction.type === 'deposit' || transaction.type === 'cashout' ? '#4CAF50' : '#FF6B6B'};">
+                        ${transaction.type === 'deposit' || transaction.type === 'cashout' ? '+' : '-'}₵${transaction.amount.toFixed(2)}
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
     } catch (error) {
         console.error('Error loading transactions:', error);
+    }
+}
+
+/**
+ * Load Referral Statistics
+ */
+async function loadReferralStats() {
+    try {
+        const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+        const authToken = localStorage.getItem('authToken') || localStorage.getItem('auth_token');
+
+        if (!userId) {
+            console.log('[Referral] No userId found. Checking localStorage keys:', Object.keys(localStorage));
+            return;
+        }
+
+        console.log('[Referral] Loading stats for userId:', userId);
+        console.log('[Referral] API Base:', apiBase);
+
+        const fetchUrl = `${apiBase}/user/referrals/${userId}`;
+        console.log('[Referral] Fetching from:', fetchUrl);
+
+        const response = await fetch(fetchUrl, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('[Referral] Response status:', response.status, response.statusText);
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error('[Referral] API Error Response:', {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorData
+            });
+            return;
+        }
+
+        const data = await response.json();
+        console.log('[Referral] Full API Response:', JSON.stringify(data, null, 2));
+        
+        const referrals = data.referrals || data;
+
+        console.log('[Referral] Parsed referrals object:', referrals);
+
+        // Update referral code display
+        const codeElement = document.getElementById('referralCode');
+        if (codeElement) {
+            codeElement.textContent = referrals.referralCode || 'N/A';
+            console.log('[Referral] Updated referralCode to:', referrals.referralCode);
+        } else {
+            console.warn('[Referral] referralCode element not found');
+        }
+
+        // Update referral link
+        const linkElement = document.getElementById('referralLink');
+        if (linkElement) {
+            const referralLink = `${window.location.origin}/signup.html?ref=${referrals.referralCode}`;
+            linkElement.value = referralLink;
+            console.log('[Referral] Updated referralLink to:', referralLink);
+        } else {
+            console.warn('[Referral] referralLink element not found');
+        }
+
+        // Update friends invited
+        const friendsElement = document.getElementById('friendsInvited');
+        if (friendsElement) {
+            friendsElement.textContent = referrals.friendsInvited || 0;
+            console.log('[Referral] Successfully updated friendsInvited to:', referrals.friendsInvited);
+        } else {
+            console.warn('[Referral] friendsInvited element not found');
+        }
+
+        // Update commission earned
+        const commissionElement = document.getElementById('referralCommission');
+        if (commissionElement) {
+            const commission = (referrals.commissionEarned || 0).toFixed(2);
+            commissionElement.textContent = commission;
+            console.log('[Referral] Successfully updated referralCommission to:', commission);
+        } else {
+            console.warn('[Referral] referralCommission element not found');
+        }
+
+        // Display referred users list
+        const referralsListElement = document.getElementById('referralsList');
+        if (referralsListElement) {
+            const referredUsers = referrals.referredUsers || [];
+            console.log('[Referral] Referred users:', referredUsers);
+
+            if (referredUsers.length === 0) {
+                referralsListElement.innerHTML = '<p class="no-data">No referrals yet</p>';
+                console.log('[Referral] No referred users found');
+            } else {
+                referralsListElement.innerHTML = referredUsers.map(user => {
+                    const signupDate = new Date(user.signupDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    return `
+                    <div class="friend-card">
+                        <div class="friend-info">
+                            <h4>${user.name}</h4>
+                            <p>${user.email}</p>
+                            <small>Joined: ${signupDate}</small>
+                        </div>
+                        <div class="friend-icon">
+                            <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+                console.log('[Referral] Successfully displayed', referredUsers.length, 'referred users');
+            }
+        } else {
+            console.warn('[Referral] referralsList element not found');
+        }
+
+    } catch (error) {
+        console.error('[Referral] Exception occurred:', error);
+        console.error('[Referral] Error stack:', error.stack);
     }
 }
 
@@ -236,16 +370,32 @@ function getTransactionIcon(type) {
         'deposit': '💳',
         'withdraw': '💸',
         'commission': '🎁',
-        'payment': '💰'
+        'payment': '💰',
+        'cashout': '💰'
     };
     return icons[type] || '📊';
+}
+
+/**
+ * Get Status Color
+ */
+function getStatusColor(status) {
+    const colors = {
+        'pending': '#ff9800',
+        'approved': '#4CAF50',
+        'rejected': '#f44336',
+        'success': '#4CAF50',
+        'failed': '#f44336',
+        'completed': '#4CAF50'
+    };
+    return colors[status] || '#999';
 }
 
 /**
  * Redirect to Deposit
  */
 function redirectToDeposit() {
-    window.location.href = 'cashout.html';
+    window.location.href = 'deposit.html';
 }
 
 /**
@@ -253,6 +403,29 @@ function redirectToDeposit() {
  */
 function redirectToWithdraw() {
     window.location.href = 'withdraw.html';
+}
+
+/**
+ * Redirect to Admin Panel
+ */
+function redirectToAdmin() {
+    window.location.href = 'admin.html';
+}
+
+/**
+ * Show Admin Button if User is Admin
+ */
+function showAdminButtonIfAdmin() {
+    try {
+        if (isUserAdmin()) {
+            document.getElementById('admin-btn').style.display = 'flex';
+        } else {
+            document.getElementById('admin-btn').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+        document.getElementById('admin-btn').style.display = 'none';
+    }
 }
 
 /**
@@ -392,17 +565,30 @@ function displayTiers(tiers, userId) {
     tiersList.innerHTML = tiers.map(tier => {
         const isAccessible = tier.is_accessible;
         const canClaim = tier.can_claim;
+        const isLocked = tier.is_locked;
         const lastClaim = tier.last_claim_time ? new Date(tier.last_claim_time) : null;
         const nextClaim = tier.next_claim_time ? new Date(tier.next_claim_time) : null;
+        const nextUnlock = tier.next_unlock_time ? new Date(tier.next_unlock_time) : null;
         
         let buttonHTML = '';
         let statusClass = 'locked';
         let statusText = 'LOCKED';
         
-        if (!isAccessible) {
+        if (!isAccessible && tier.tier_id !== 0) {
             buttonHTML = `<button class="tier-action-btn tier-locked-btn" disabled>
                 LOCKED - Need ₵${tier.required_amount}
             </button>`;
+            statusClass = 'locked';
+            statusText = 'LOCKED';
+        } else if (isLocked && tier.tier_id !== 0) {
+            // Tier is locked because user claimed from another paid tier
+            const timeRemaining = getTimeRemaining(nextUnlock);
+            buttonHTML = `
+                <button class="tier-action-btn tier-locked-btn" disabled>
+                    LOCKED - CLAIM FROM TIER ${tier.active_paid_tier_id}
+                </button>
+                <div class="cooldown-timer">Unlocks in ${timeRemaining}</div>
+            `;
             statusClass = 'locked';
             statusText = 'LOCKED';
         } else if (canClaim) {
@@ -518,9 +704,16 @@ async function claimTierReward(tierId, userId) {
             loadTiers();
             loadWithdrawableAmount(userId);
         } else {
-            showNotification(data.error || 'Failed to claim reward', 'error');
+            // Handle locked tier error
+            if (data.locked_reason) {
+                const unlockTime = new Date(data.tier_unlocks_at);
+                const formattedTime = unlockTime.toLocaleTimeString();
+                showNotification(`This tier is locked. ${data.locked_reason}. Unlocks at ${formattedTime}`, 'error');
+            } else {
+                showNotification(data.error || 'Failed to claim reward', 'error');
+            }
             button.disabled = false;
-            button.textContent = `CLAIM ₵${data.reward} REWARD`;
+            button.textContent = `CLAIM ₵${data.reward || 'Reward'} REWARD`;
         }
     } catch (error) {
         console.error('Error claiming reward:', error);
@@ -532,18 +725,49 @@ async function claimTierReward(tierId, userId) {
 }
 
 /**
- * Load Withdrawable Amount
+ * Load Withdrawable Amount (including tier rewards + referral commission)
  */
 async function loadWithdrawableAmount(userId) {
     try {
-        const response = await fetch(`${apiBase}/tiers/withdrawable/${userId}`);
-        if (!response.ok) throw new Error('Failed to fetch withdrawable amount');
-        
-        const data = await response.json();
-        document.getElementById('withdrawableAmount').textContent = data.withdrawable.toFixed(2);
+        const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000/api'
+            : 'https://sikapa-bwxu.onrender.com/api';
+
+        // Fetch tier withdrawable amount and referral commission in parallel
+        const [tierResponse, referralResponse] = await Promise.all([
+            fetch(`${apiBase}/tiers/withdrawable/${userId}`),
+            fetch(`${apiBase}/user/referrals/${userId}`)
+        ]);
+
+        let totalWithdrawable = 0;
+        let tierWithdrawable = 0;
+        let referralCommission = 0;
+
+        // Get tier rewards withdrawable amount
+        if (tierResponse.ok) {
+            const tierData = await tierResponse.json();
+            tierWithdrawable = tierData.withdrawable || 0;
+        }
+
+        // Get referral commission
+        if (referralResponse.ok) {
+            const referralData = await referralResponse.json();
+            referralCommission = referralData.referrals?.commissionEarned || 0;
+        }
+
+        // Total withdrawable = tier rewards + referral commission
+        totalWithdrawable = tierWithdrawable + referralCommission;
+
+        if (document.getElementById('withdrawableAmount')) {
+            document.getElementById('withdrawableAmount').textContent = totalWithdrawable.toFixed(2);
+        }
+
+        console.log('[Dashboard] Withdrawable amount:', { tierWithdrawable, referralCommission, totalWithdrawable });
     } catch (error) {
         console.error('Error loading withdrawable amount:', error);
-        document.getElementById('withdrawableAmount').textContent = '0.00';
+        if (document.getElementById('withdrawableAmount')) {
+            document.getElementById('withdrawableAmount').textContent = '0.00';
+        }
     }
 }
 

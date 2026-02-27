@@ -762,6 +762,67 @@ body {
   font-size: 13px;
 }
 
+.friend-card {
+  background: #f9f9f9;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.friend-card:hover {
+  background: #f5f5f5;
+  border-color: #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.friend-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.friend-card-info h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.friend-card-info p {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+.friend-card-info small {
+  font-size: 11px;
+  color: #999;
+  margin: 2px 0 0 0;
+}
+
+.friend-card-icon {
+  flex-shrink: 0;
+  font-size: 20px;
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-referrals-message {
+  text-align: center;
+  padding: 30px 20px;
+  color: #999;
+  font-size: 13px;
+}
+
 /* === ME/PROFILE TAB STYLES === */
 .profile-header {
   background: white;
@@ -947,6 +1008,15 @@ body {
 }
 
 .withdraw-action:active {
+  transform: scale(0.97);
+}
+
+.admin-action {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.admin-action:active {
   transform: scale(0.97);
 }
 
@@ -2468,6 +2538,40 @@ body {
     .balance-card .amount {
         font-size: 42px;
     }
+
+    .friend-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .friend-card-info h4 {
+        font-size: 13px;
+    }
+
+    .friend-card-info p {
+        font-size: 11px;
+    }
+
+    .friend-card-info small {
+        font-size: 10px;
+    }
+
+    .friend-card-icon {
+        font-size: 18px;
+    }
+
+    .referrals-list h3 {
+        font-size: 16px;
+    }
+
+    .referral-code-box,
+    .referral-link-box {
+        padding: 12px;
+    }
+
+    .referral-stats {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Responsive Design */
@@ -2516,5 +2620,27 @@ body {
 
     .tab-content {
         padding-bottom: 70px;
+    }
+
+    .friend-card {
+        padding: 10px;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .friend-card-icon {
+        font-size: 16px;
+    }
+
+    .friend-card-info h4 {
+        font-size: 12px;
+    }
+
+    .friend-card-info p {
+        font-size: 10px;
+    }
+
+    .referral-stats {
+        grid-template-columns: 1fr;
     }
 }

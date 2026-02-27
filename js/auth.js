@@ -42,7 +42,7 @@ function logoutUser() {
   localStorage.removeItem('user_uid');
   localStorage.removeItem('user_name');
   localStorage.removeItem('auth_token');
-  window.location.href = 'index.html';
+  window.location.href = 'login.html';
 }
 
 // Redirect to login if not authenticated

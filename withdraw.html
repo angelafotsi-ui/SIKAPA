@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Withdraw - SIKAPA</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .withdraw-container {
             max-width: 600px;
@@ -178,10 +179,112 @@
             visibility: visible;
         }
 
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .back-button:hover {
+            color: #764ba2;
+        }
+
+        .withdrawable-section {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border-left: 4px solid #4caf50;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .withdrawable-label {
+            color: #2e7d32;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .withdrawable-amount {
+            color: #1b5e20;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .amount-warning {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background: #fff3cd;
+            border-left: 3px solid #ff9800;
+            border-radius: 4px;
+            color: #856404;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .amount-warning.active {
+            display: block;
+        }
+
         @media (max-width: 500px) {
             .tooltip {
                 white-space: normal;
                 width: 150px;
+            }
+
+            .withdrawable-amount {
+                font-size: 1.5rem;
+            }
+
+            .withdraw-container {
+                margin: 1rem auto;
+                padding: 1.5rem;
+            }
+
+            .error-message {
+                font-size: 0.85rem;
+                word-wrap: break-word;
+            }
+
+            .form-group input,
+            .form-group select {
+                padding: 0.7rem;
+                font-size: 16px;
+            }
+
+            .withdraw-button {
+                padding: 0.9rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .withdraw-container {
+                padding: 1rem;
+            }
+
+            .withdraw-container h1 {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .money-animation {
+                font-size: 2rem;
+            }
+
+            .error-message {
+                font-size: 0.8rem;
+            }
+
+            .withdrawal-info {
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -199,27 +302,27 @@
 
     <!-- Withdraw Form -->
     <div class="withdraw-container">
+        <a class="back-button" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
         <div class="heading-container">
-            <h1>Withdraw Request</h1>
+            <h1>Withdraw</h1>
             <div class="money-animation">💰</div>
         </div>
-        <form id="withdrawForm">
-            <!-- Account Name -->
-            <div class="form-group">
-                <label for="walletId">Account Name *</label>
-                <input 
-                    type="text" 
-                    id="walletId" 
-                    name="walletId" 
-                    placeholder="Enter your account name" 
-                    required
-                >
-                <div class="error-message" id="walletIdError"></div>
-            </div>
 
-            <!-- Account Number -->
+        <!-- Withdrawable Amount Section -->
+        <div class="withdrawable-section">
+            <div class="withdrawable-label">Withdrawable Amount</div>
+            <div class="withdrawable-amount">₵ <span id="withdrawableAmount">0.00</span></div>
+            <div class="amount-warning" id="amountWarning">
+                <i class="fas fa-exclamation-triangle"></i> Amount exceeds your withdrawable balance
+            </div>
+        </div>
+
+        <form id="withdrawForm">
+            <!-- Mobile Money Number -->
             <div class="form-group">
-                <label for="walletIdName">Account Number *</label>
+                <label for="walletIdName">Mobile Money Number *</label>
                 <input 
                     type="text" 
                     id="walletIdName" 
@@ -228,6 +331,19 @@
                     required
                 >
                 <div class="error-message" id="walletIdNameError"></div>
+            </div>
+
+            <!-- Mobile Money Name -->
+            <div class="form-group">
+                <label for="walletId">Mobile Money Name *</label>
+                <input 
+                    type="text" 
+                    id="walletId" 
+                    name="walletId" 
+                    placeholder="Enter your account name" 
+                    required
+                >
+                <div class="error-message" id="walletIdError"></div>
             </div>
 
             <!-- Network Provider -->
@@ -269,6 +385,7 @@
     </div>
 
     <script src="js/auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
     <script>
         // Check authentication
         document.addEventListener('DOMContentLoaded', function() {
@@ -276,7 +393,78 @@
                 window.location.href = '/auth.html';
             }
             updateAuthUI();
+            
+            // Load withdrawable amount
+            loadWithdrawableAmount();
+            
+            // Add real-time validation for amount input
+            document.getElementById('amount').addEventListener('input', validateWithdrawAmount);
         });
+
+        // Go back to dashboard
+        function goBack() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Load withdrawable amount (tier rewards + referral commission)
+        async function loadWithdrawableAmount() {
+            const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+            if (!userId) return;
+
+            try {
+                const apiBase = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:3000/api'
+                    : 'https://sikapa-bwxu.onrender.com/api';
+
+                // Fetch tier withdrawable amount and referral commission in parallel
+                const [tierResponse, referralResponse] = await Promise.all([
+                    fetch(`${apiBase}/tiers/withdrawable/${userId}`),
+                    fetch(`${apiBase}/user/referrals/${userId}`)
+                ]);
+
+                let tierWithdrawable = 0;
+                let referralCommission = 0;
+
+                // Get tier rewards withdrawable amount
+                if (tierResponse.ok) {
+                    const tierData = await tierResponse.json();
+                    tierWithdrawable = tierData.withdrawable || 0;
+                }
+
+                // Get referral commission
+                if (referralResponse.ok) {
+                    const referralData = await referralResponse.json();
+                    referralCommission = referralData.referrals?.commissionEarned || 0;
+                }
+
+                // Total withdrawable = tier rewards + referral commission
+                const totalWithdrawable = tierWithdrawable + referralCommission;
+                document.getElementById('withdrawableAmount').textContent = totalWithdrawable.toFixed(2);
+                // Store withdrawable amount for validation
+                window.withdrawableAmount = totalWithdrawable;
+                console.log('[Withdraw] Withdrawable amount:', { tierWithdrawable, referralCommission, totalWithdrawable });
+            } catch (error) {
+                console.error('Error loading withdrawable amount:', error);
+            }
+        }
+
+        // Validate amount entered
+        function validateWithdrawAmount() {
+            const amount = document.getElementById('amount').value;
+            const warningElement = document.getElementById('amountWarning');
+            
+            if (amount && window.withdrawableAmount !== undefined) {
+                if (parseFloat(amount) > window.withdrawableAmount) {
+                    warningElement.classList.add('active');
+                    return false;
+                } else {
+                    warningElement.classList.remove('active');
+                    return true;
+                }
+            }
+            warningElement.classList.remove('active');
+            return true;
+        }
 
         // Form submission
         document.getElementById('withdrawForm').addEventListener('submit', async function(e) {
@@ -320,6 +508,18 @@
 
             if (amount && parseFloat(amount) <= 0) {
                 document.getElementById('amountError').textContent = 'Amount must be greater than 0';
+                isValid = false;
+            }
+
+            // Check minimum withdrawal amount (GH₵8)
+            if (amount && parseFloat(amount) < 8) {
+                document.getElementById('amountError').textContent = 'Minimum withdrawal amount is ₵8';
+                isValid = false;
+            }
+
+            // Check if amount exceeds withdrawable amount
+            if (!validateWithdrawAmount()) {
+                document.getElementById('amountError').textContent = `Amount must be between ₵8 and ₵${window.withdrawableAmount?.toFixed(2) || '0.00'}`;
                 isValid = false;
             }
 

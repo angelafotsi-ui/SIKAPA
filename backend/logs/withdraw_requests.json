@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "userEmail": "fotsiemmanuel397@gmail.com",
+    "walletId": "JEFF SANDOH",
+    "walletIdName": "0592680202",
+    "walletNetwork": "mtn",
+    "amount": 61,
+    "status": "approved",
+    "createdAt": "2026-02-27T12:03:22.800Z",
+    "updatedAt": "2026-02-27T12:11:14.684Z"
+  }
+]

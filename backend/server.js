@@ -91,6 +91,7 @@ const balanceRoutes = require('./routes/balance');
 const fundRoutes = require('./routes/fund');
 const userRoutes = require('./routes/user');
 const tierRoutes = require('./routes/tiers');
+const depositRoutes = require('./routes/deposit');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
@@ -98,6 +99,7 @@ app.use('/api/debug', debugRoutes);
 app.use('/api/cashout', cashoutRoutes);
 app.use('/api/withdraw', withdrawRoutes);
 app.use('/api/fund', fundRoutes);
+app.use('/api/deposit', depositRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/balance', balanceRoutes);
