@@ -22,22 +22,5 @@
         "claimedAt": "2026-02-27T11:43:38.908Z"
       }
     ]
-  },
-  "ItgHrMd36OfNSLAT8yzID0JOQ9h2": {
-    "totalEarned": 60.5,
-    "claims": [
-      {
-        "tierId": 0,
-        "tierName": "Starter",
-        "reward": 0.5,
-        "claimedAt": "2026-02-27T17:31:39.329Z"
-      },
-      {
-        "tierId": 3,
-        "tierName": "Platinum",
-        "reward": 60,
-        "claimedAt": "2026-02-27T17:31:47.238Z"
-      }
-    ]
   }
 }

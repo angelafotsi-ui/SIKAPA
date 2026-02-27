@@ -29,21 +29,5 @@
     "approvedAt": "2026-02-27T13:10:59.731Z",
     "approvedBy": "admin@sikapa.com",
     "rejectionReason": null
-  },
-  {
-    "id": "deposit_ItgHrMd36OfNSLAT8yzID0JOQ9h2_1772213457511",
-    "userId": "ItgHrMd36OfNSLAT8yzID0JOQ9h2",
-    "senderName": "ANSON JEFFss",
-    "senderNumber": "0545327880",
-    "amount": 250,
-    "momoNumber": "0553843255",
-    "momoName": "Emmanuel Mawufemor",
-    "screenshotPath": "ItgHrMd36OfNSLAT8yzID0JOQ9h2_1772213457499_frankfurt-main-germany-april-1-600nw-2566942347.jpg",
-    "screenshotSize": 25058,
-    "status": "approved",
-    "createdAt": "2026-02-27T17:30:57.511Z",
-    "approvedAt": "2026-02-27T17:31:24.375Z",
-    "approvedBy": "admin@sikapa.com",
-    "rejectionReason": null
   }
 ]

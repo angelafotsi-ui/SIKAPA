@@ -98,14 +98,5 @@
     "lastUpdated": "2026-02-27T13:10:59.732Z",
     "deposited": 350,
     "tierCost": 0
-  },
-  {
-    "userId": "ItgHrMd36OfNSLAT8yzID0JOQ9h2",
-    "balance": 250,
-    "currency": "GHS",
-    "createdAt": "2026-02-27T13:58:02.310Z",
-    "lastUpdated": "2026-02-27T17:31:47.239Z",
-    "deposited": 250,
-    "withdrawable": 60.5
   }
 ]
