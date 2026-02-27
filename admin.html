@@ -1138,6 +1138,7 @@
                                     <td><span class="status-badge status-completed">${user.disabled ? 'Disabled' : 'Active'}</span></td>
                                     <td>
                                         <button class="btn btn-small" onclick="openFundModal('${user.uid}', '${user.email}'); event.stopPropagation();">Manage Funds</button>
+                                        <button class="btn btn-small btn-danger" onclick="deleteUserPermanently('${user.uid}', '${user.email}'); event.stopPropagation();" style="background: #f44336; color: white; margin-left: 5px;">Delete</button>
                                     </td>
                                 </tr>
                                 <tr class="user-details-row" id="details-${user.uid}" style="display: none;">
@@ -1689,6 +1690,44 @@
                 }
             } catch (error) {
                 console.error('Error deleting request:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        /**
+         * Delete User Permanently
+         */
+        async function deleteUserPermanently(userId, userEmail) {
+            // Confirmation with 2-step verification
+            const confirmDelete = confirm(`⚠️ WARNING: This will PERMANENTLY delete ${userEmail}. Are you sure?`);
+            if (!confirmDelete) return;
+
+            const confirmAgain = prompt(`Type YES to confirm deletion of ${userEmail}:`, '');
+            if (confirmAgain !== 'YES') {
+                alert('Deletion cancelled.');
+                return;
+            }
+
+            try {
+                const apiBase = getApiBase();
+                const response = await fetch(`${apiBase}/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(`✓ User ${userEmail} has been permanently deleted with all associated data.`);
+                    loadUsers();
+                    loadDashboardData();
+                } else {
+                    alert(`Error: ${data.message || 'Failed to delete user'}`);
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
                 alert(`Error: ${error.message}`);
             }
         }

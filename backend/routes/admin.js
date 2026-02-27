@@ -277,4 +277,84 @@ router.put('/cashout/:userId/status', (req, res) => {
     }
 });
 
+// Delete a user permanently
+router.delete('/users/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: 'User ID is required'
+            });
+        }
+
+        // Delete from Firebase Auth
+        await auth.deleteUser(userId);
+        console.log('[Admin] Deleted user from Firebase:', userId);
+
+        // Remove user data from all log files
+        const logsDir = path.join(__dirname, '../logs');
+        const logFiles = [
+            'user_balances.json',
+            'tier_claims.json',
+            'tier_earnings.json',
+            'deposit_requests.json',
+            'withdraw_requests.json',
+            'cashout_requests.json',
+            'tier_purchases.json',
+            'referrals.json'
+        ];
+
+        for (const file of logFiles) {
+            const filePath = path.join(logsDir, file);
+            if (fs.existsSync(filePath)) {
+                try {
+                    const content = fs.readFileSync(filePath, 'utf8');
+                    let data = JSON.parse(content);
+
+                    // Handle different data structures
+                    if (Array.isArray(data)) {
+                        // For arrays (deposit, withdraw, cashout, tier_purchases)
+                        data = data.filter(item => item.userId !== userId);
+                    } else if (typeof data === 'object') {
+                        // For objects (user_balances, tier_claims, tier_earnings)
+                        if (data[userId]) {
+                            delete data[userId];
+                        }
+                        // Also check for referral codes
+                        const referralCode = `SKP${userId.substring(0, 8).toUpperCase()}`;
+                        if (data[referralCode]) {
+                            delete data[referralCode];
+                        }
+                    }
+
+                    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+                    console.log('[Admin] Removed user data from:', file);
+                } catch (error) {
+                    console.error(`[Admin] Error processing ${file}:`, error);
+                    // Continue with other files if one fails
+                }
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'User deleted successfully'
+        });
+    } catch (error) {
+        console.error('[Admin] Error deleting user:', error);
+        if (error.code === 'auth/user-not-found') {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting user'
+        });
+    }
+});
+
 module.exports = router;
