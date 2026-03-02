@@ -101,22 +101,6 @@ async function loadUserStats() {
 
         if (!userId) return;
 
-        // Fetch user balance
-        const balanceResponse = await fetch(`${apiBase}/balance/user/${userId}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (balanceResponse.ok) {
-            const balanceData = await balanceResponse.json();
-            const balance = balanceData.balance || 0;
-
-            document.getElementById('homeBalance').textContent = balance.toFixed(2);
-            document.getElementById('profileTotalRevenue').textContent = balance.toFixed(2);
-        }
-
         // Fetch user stats (commission today, today's earning, recharge amount, total revenue)
         const statsResponse = await fetch(`${apiBase}/user/stats/${userId}`, {
             headers: {
