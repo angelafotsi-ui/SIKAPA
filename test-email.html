@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Email Service - SIKAPA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            gap: 10px;
+        }
+
+        .divider::before {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider-text {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .quick-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-btn {
+            padding: 10px;
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .response.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .response.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: currentColor;
+            margin-left: 5px;
+            animation: dots 1.4s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20%, 80%, 100% {
+                opacity: 0.3;
+            }
+            40% {
+                opacity: 1;
+            }
+        }
+
+        .email-type {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .email-type:last-of-type {
+            border-bottom: none;
+        }
+
+        .email-icon {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📧 Email Service</h1>
+        <p class="subtitle">Test SIKAPA email templates and send emails</p>
+
+        <div class="quick-buttons">
+            <button class="quick-btn" onclick="loadTemplate('welcome')">Welcome</button>
+            <button class="quick-btn" onclick="loadTemplate('payment')">Payment</button>
+            <button class="quick-btn" onclick="loadTemplate('custom')">Custom</button>
+        </div>
+
+        <form id="emailForm">
+            <!-- Email Type Selection -->
+            <div class="form-group">
+                <label for="emailType">📬 Email Type</label>
+                <select id="emailType" onchange="updateForm()">
+                    <option value="welcome">Welcome Email</option>
+                    <option value="payment">Payment Confirmation</option>
+                    <option value="custom">Custom Email</option>
+                </select>
+            </div>
+
+            <!-- Common Fields -->
+            <div class="form-group">
+                <label for="email">📩 Recipient Email</label>
+                <input type="email" id="email" placeholder="user@example.com" required>
+            </div>
+
+            <!-- Welcome Email Fields -->
+            <div id="welcomeFields" style="display: none;">
+                <div class="form-group">
+                    <label for="name">👤 Full Name</label>
+                    <input type="text" id="name" placeholder="John Doe">
+                </div>
+            </div>
+
+            <!-- Payment Email Fields -->
+            <div id="paymentFields" style="display: none;">
+                <div class="form-group">
+                    <label for="amount">💰 Amount</label>
+                    <input type="text" id="amount" placeholder="GH₵ 100.00">
+                </div>
+                <div class="form-group">
+                    <label for="reference">📋 Reference</label>
+                    <input type="text" id="reference" placeholder="TXN-123456">
+                </div>
+            </div>
+
+            <!-- Custom Email Fields -->
+            <div id="customFields" style="display: none;">
+                <div class="form-group">
+                    <label for="subject">📌 Subject</label>
+                    <input type="text" id="subject" placeholder="Email Subject">
+                </div>
+                <div class="form-group">
+                    <label for="htmlContent">📝 HTML Content</label>
+                    <textarea id="htmlContent" placeholder="<h1>Hello!</h1><p>Your message here...</p>"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">
+                Send Email
+                <span id="sendingLoader" class="loading" style="display: none;"></span>
+            </button>
+        </form>
+
+        <div id="response" class="response"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('emailForm');
+        const emailTypeSelect = document.getElementById('emailType');
+        const responseDiv = document.getElementById('response');
+
+        /**
+         * Update form fields based on email type
+         */
+        function updateForm() {
+            const type = emailTypeSelect.value;
+            
+            // Hide all fields
+            document.getElementById('welcomeFields').style.display = 'none';
+            document.getElementById('paymentFields').style.display = 'none';
+            document.getElementById('customFields').style.display = 'none';
+
+            // Show relevant fields
+            if (type === 'welcome') {
+                document.getElementById('welcomeFields').style.display = 'block';
+            } else if (type === 'payment') {
+                document.getElementById('paymentFields').style.display = 'block';
+            } else if (type === 'custom') {
+                document.getElementById('customFields').style.display = 'block';
+            }
+        }
+
+        /**
+         * Load template with sample data
+         */
+        function loadTemplate(type) {
+            emailTypeSelect.value = type;
+            updateForm();
+
+            // Pre-fill with sample data
+            document.getElementById('email').value = 'test@example.com';
+
+            if (type === 'welcome') {
+                document.getElementById('name').value = 'John Doe';
+            } else if (type === 'payment') {
+                document.getElementById('amount').value = '₵ 100.00';
+                document.getElementById('reference').value = 'TXN-' + Date.now();
+            } else if (type === 'custom') {
+                document.getElementById('subject').value = 'Test Subject';
+                document.getElementById('htmlContent').value = '<h2 style="color: #667eea;">Hello!</h2><p>This is a test email from SIKAPA.</p>';
+            }
+        }
+
+        /**
+         * Send email
+         */
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const type = emailTypeSelect.value;
+            const email = document.getElementById('email').value;
+            const loader = document.getElementById('sendingLoader');
+            const btn = form.querySelector('button[type="submit"]');
+
+            if (!email) {
+                showResponse('Email address is required', 'error');
+                return;
+            }
+
+            // Show loading state
+            loader.style.display = 'inline-block';
+            btn.disabled = true;
+
+            try {
+                let endpoint = '';
+                let payload = { email };
+
+                if (type === 'welcome') {
+                    const name = document.getElementById('name').value;
+                    if (!name) {
+                        showResponse('Name is required for welcome email', 'error');
+                        throw new Error('Name required');
+                    }
+                    endpoint = '/api/email/welcome';
+                    payload.name = name;
+                } else if (type === 'payment') {
+                    const amount = document.getElementById('amount').value;
+                    const reference = document.getElementById('reference').value;
+                    if (!amount || !reference) {
+                        showResponse('Amount and reference are required', 'error');
+                        throw new Error('Missing fields');
+                    }
+                    endpoint = '/api/email/payment';
+                    payload.amount = amount;
+                    payload.reference = reference;
+                } else if (type === 'custom') {
+                    const subject = document.getElementById('subject').value;
+                    const html = document.getElementById('htmlContent').value;
+                    if (!subject || !html) {
+                        showResponse('Subject and HTML content are required', 'error');
+                        throw new Error('Missing fields');
+                    }
+                    endpoint = '/api/email/send';
+                    payload.subject = subject;
+                    payload.html = html;
+                }
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showResponse(
+                        `✓ Email sent successfully!\nMessage ID: ${data.messageId}\n\nRecipient: ${email}`,
+                        'success'
+                    );
+                    form.reset();
+                    updateForm();
+                } else {
+                    showResponse(
+                        `✗ Error: ${data.message}\n\n${data.error ? 'Details: ' + data.error : ''}`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showResponse(
+                    `✗ Error sending email: ${error.message}`,
+                    'error'
+                );
+            } finally {
+                loader.style.display = 'none';
+                btn.disabled = false;
+            }
+        });
+
+        /**
+         * Show response message
+         */
+        function showResponse(message, type) {
+            responseDiv.textContent = message;
+            responseDiv.className = `response ${type}`;
+        }
+
+        // Initialize form on load
+        updateForm();
+    </script>
+</body>
+</html>

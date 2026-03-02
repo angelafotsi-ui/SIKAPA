@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
+const { sendPaymentConfirmation } = require('../services/emailService');
 
 console.log('[Deposit Routes] Module loaded - setting up deposit endpoints');
 
@@ -343,6 +344,25 @@ router.post('/approve', (req, res) => {
         // Save updated deposits
         deposits[depositIndex] = deposit;
         saveDeposits(deposits);
+
+        // Send payment confirmation email asynchronously
+        try {
+            // Get user email from Firebase (requires auth service)
+            const { auth } = require('../config/firebase');
+            auth.getUser(deposit.userId).then(userRecord => {
+                const userEmail = userRecord.email;
+                const refId = depositId;
+                const dateStr = new Date(deposit.approvedAt).toLocaleString();
+                
+                sendPaymentConfirmation(userEmail, deposit.amount, refId, dateStr).catch(emailError => {
+                    console.error(`[Deposit] Failed to send payment confirmation email:`, emailError.message);
+                });
+            }).catch(authError => {
+                console.error(`[Deposit] Failed to fetch user email for deposit ${depositId}:`, authError.message);
+            });
+        } catch (emailError) {
+            console.error(`[Deposit] Error in email sending:`, emailError.message);
+        }
 
         console.log(`[Deposit] ✓ Deposit approved:`, {
             id: depositId,

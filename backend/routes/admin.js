@@ -3,6 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const { auth, db } = require('../config/firebase');
+const { sendPaymentConfirmation } = require('../services/emailService');
 
 // Get all users
 router.get('/users', async (req, res) => {
@@ -212,6 +213,19 @@ router.put('/withdraw/:userId/status', (req, res) => {
 
         fs.writeFileSync(logFile, JSON.stringify(requests, null, 2));
 
+        // Send email notification for approval
+        if (status === 'approved' && request.userEmail) {
+            try {
+                const dateStr = new Date().toLocaleString();
+                sendPaymentConfirmation(request.userEmail, request.amount, request.walletId || 'Withdrawal', dateStr)
+                    .catch(emailError => {
+                        console.error(`[Admin] Failed to send withdrawal approval email:`, emailError.message);
+                    });
+            } catch (emailError) {
+                console.error(`[Admin] Error sending withdrawal email:`, emailError.message);
+            }
+        }
+
         res.json({
             success: true,
             message: `Withdrawal status updated to ${status}`
@@ -263,6 +277,19 @@ router.put('/cashout/:userId/status', (req, res) => {
         request.updatedAt = new Date().toISOString();
 
         fs.writeFileSync(logFile, JSON.stringify(requests, null, 2));
+
+        // Send email notification for approval
+        if (status === 'approved' && request.userEmail) {
+            try {
+                const dateStr = new Date().toLocaleString();
+                sendPaymentConfirmation(request.userEmail, request.amount, request.walletId || 'Cashout', dateStr)
+                    .catch(emailError => {
+                        console.error(`[Admin] Failed to send cashout approval email:`, emailError.message);
+                    });
+            } catch (emailError) {
+                console.error(`[Admin] Error sending cashout email:`, emailError.message);
+            }
+        }
 
         res.json({
             success: true,

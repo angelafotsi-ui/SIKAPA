@@ -92,6 +92,7 @@ const fundRoutes = require('./routes/fund');
 const userRoutes = require('./routes/user');
 const tierRoutes = require('./routes/tiers');
 const depositRoutes = require('./routes/deposit');
+const emailRoutes = require('./routes/email');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
@@ -105,6 +106,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/balance', balanceRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/tiers', tierRoutes);
+app.use('/api/email', emailRoutes);
 app.use('/api', healthRoutes);
 
 console.log('[3] API routes mounted');

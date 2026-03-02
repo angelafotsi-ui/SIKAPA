@@ -1,5 +1,6 @@
 const firebaseConfig = require('../config/firebase');
 const fetch = require('node-fetch');
+const { sendWelcomeEmail } = require('../services/emailService');
 
 /**
  * Get auth - lazy load to ensure Firebase is initialized
@@ -103,6 +104,12 @@ exports.signup = async (req, res, next) => {
 
     // Create custom token for immediate login
     const customToken = await auth.createCustomToken(userRecord.uid);
+
+    // Send welcome email asynchronously (don't block signup)
+    sendWelcomeEmail(name, email).catch(error => {
+      console.error('[Signup] Failed to send welcome email:', error.message);
+      // Don't fail signup if email fails to send
+    });
 
     res.json({
       success: true,
