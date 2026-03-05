@@ -290,6 +290,8 @@
                 const apiBase = window.location.hostname === 'localhost' 
                     ? 'http://localhost:3000/api'
                     : 'https://sikapa-q2i0.onrender.com/api';
+                
+                const response = await fetch(`${apiBase}/auth/signup`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -316,15 +318,16 @@
                         localStorage.setItem('authToken', data.customToken);
                     }
                     
-                    // Hide form and show welcome popup
-                    statusDiv.innerHTML = '<div class="success">✓ Account created successfully!</div>';
-                    document.getElementById('signup-form').style.display = 'none';
-                    document.querySelector('.auth-footer').style.display = 'none';
+                    // Show enhanced success message
+                    statusDiv.innerHTML = '<div class="success"><span style="font-size: 1.5rem; display: block; margin-bottom: 10px;">✓ Account Created Successfully!</span><span style="font-size: 0.95rem; display: block;">Welcome to Sikapa! Redirecting...</span></div>';
+                    statusDiv.style.animation = 'slideInUp 0.5s ease-out';
                     
-                    // Show welcome popup
+                    // Hide form and show welcome popup
                     setTimeout(() => {
+                        document.getElementById('signup-form').style.display = 'none';
+                        document.querySelector('.auth-footer').style.display = 'none';
                         showWelcomePopup();
-                    }, 1000);
+                    }, 1500);
                 } else {
                     statusDiv.innerHTML = `<div class="error">✗ ${data.message}</div>`;
                 }

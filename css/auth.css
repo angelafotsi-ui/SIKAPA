@@ -20,7 +20,9 @@ body {
   justify-content: center;
   padding: 20px;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Starfield Background - Black Stars on White */
@@ -59,6 +61,7 @@ body::before {
   max-width: 420px;
   position: relative;
   z-index: 10;
+  margin: auto;
 }
 
 .auth-box {
@@ -69,6 +72,9 @@ body::before {
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 0 40px rgba(102, 126, 234, 0.1);
   padding: 45px 35px;
   animation: slideInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes slideInUp {
@@ -306,6 +312,78 @@ body::before {
 
 /* Responsive */
 @media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+
+  .auth-box {
+    padding: 24px 18px;
+    border-radius: 16px;
+  }
+
+  .auth-header h1 {
+    font-size: 1.75rem;
+    margin-bottom: 5px;
+  }
+
+  .auth-header p {
+    font-size: 0.9rem;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .form-group input {
+    padding: 11px 14px;
+    font-size: 16px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+  }
+
+  .form-group input:focus {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .submit-button {
+    padding: 12px;
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+  }
+
+  .auth-header {
+    margin-bottom: 24px;
+  }
+
+  .auth-footer {
+    padding-top: 16px;
+  }
+
+  .auth-footer p {
+    font-size: 0.9rem;
+  }
+
+  .auth-footer a {
+    font-size: 0.9rem;
+  }
+
+  .success, .error, .warning {
+    padding: 11px 14px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+
+  #status-message {
+    margin-top: 14px;
+    font-size: 0.9rem;
+  }
+}
   .auth-box {
     padding: 35px 25px;
     border-radius: 16px;
