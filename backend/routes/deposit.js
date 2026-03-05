@@ -3,6 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const { sendPaymentConfirmation } = require('../services/emailService');
+const { initializePayment, verifyPayment } = require('../config/hubtel');
 
 console.log('[Deposit Routes] Module loaded - setting up deposit endpoints');
 
@@ -504,6 +505,369 @@ router.get('/screenshot/:filename', (req, res) => {
 });
 
 /**
+ * Initialize HUBTEL payment
+ * POST /api/deposit/hubtel/initiate
+ */
+router.post('/hubtel/initiate', async (req, res) => {
+    console.log('[Deposit] ================== HUBTEL INITIATE ==================');
+    console.log('[Deposit] Method: POST /api/deposit/hubtel/initiate');
+    
+    try {
+        const { userId, customerEmail, amount, returnUrl } = req.body;
+
+        if (!userId || !customerEmail || !amount) {
+            console.log('[Deposit] ✗ Missing required fields');
+            return res.status(400).json({
+                success: false,
+                message: 'userId, customerEmail, and amount are required'
+            });
+        }
+
+        const amountNum = parseFloat(amount);
+        if (isNaN(amountNum) || amountNum <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Amount must be a positive number'
+            });
+        }
+
+        // Generate unique reference (max 32 chars for HUBTEL)
+        const shortUserId = userId.substring(0, 8);
+        const timestamp = Date.now().toString().slice(-7);
+        const reference = `DEP_${shortUserId}_${timestamp}`;
+
+        // Prepare payment data
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        
+        // Use provided returnUrl with reference replaced, or default to deposit-success.html
+        let finalReturnUrl;
+        if (returnUrl) {
+            finalReturnUrl = returnUrl.replace('{reference}', reference);
+        } else {
+            finalReturnUrl = `${baseUrl}/deposit-success.html?amount=${amountNum}&reference=${reference}`;
+        }
+
+        const paymentData = {
+            amount: amountNum,
+            description: `Deposit to Sikapa account - User: ${userId}`,
+            customerName: customerEmail.split('@')[0] || 'Sikapa User',
+            customerEmail: customerEmail,
+            customerPhone: '233', // Placeholder, HUBTEL will collect actual phone
+            reference: reference,
+            returnUrl: finalReturnUrl,
+            callbackUrl: `${baseUrl}/api/deposit/hubtel/callback`
+        };
+
+        // Initialize HUBTEL payment
+        const result = await initializePayment(paymentData);
+
+        if (!result.success) {
+            console.error('[Deposit] ✗ HUBTEL payment initialization failed:', result.error);
+            return res.status(400).json({
+                success: false,
+                message: 'Failed to initialize payment',
+                error: result.error
+            });
+        }
+
+        // Save deposit record as pending
+        const depositRecord = {
+            id: reference,
+            userId: userId,
+            customerEmail: customerEmail,
+            amount: amountNum,
+            method: 'HUBTEL',
+            status: 'pending',
+            transactionId: result.transactionId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        // Append to deposits file
+        const deposits = getAllDeposits();
+        deposits.push(depositRecord);
+        saveDeposits(deposits);
+
+        console.log('[Deposit] ✓ HUBTEL payment initiated:', reference);
+
+        res.json({
+            success: true,
+            paymentUrl: result.paymentUrl,
+            reference: reference,
+            transactionId: result.transactionId,
+            message: 'Payment initialization successful'
+        });
+
+    } catch (error) {
+        console.error('[Deposit] ✗ Error initiating HUBTEL payment:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error initiating payment',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * HUBTEL Payment Callback
+ * POST /api/deposit/hubtel/callback
+ */
+router.post('/hubtel/callback', async (req, res) => {
+    console.log('[Deposit] ================== HUBTEL CALLBACK ==================');
+    console.log('[Deposit] Callback data:', req.body);
+
+    try {
+        // Parse HUBTEL callback format: { ResponseCode, Status, Data: { ClientReference, Amount, Status, ... } }
+        const { ResponseCode, Status, Data } = req.body;
+
+        if (!Data || !Data.ClientReference) {
+            console.log('[Deposit] ✗ Invalid callback data - missing ClientReference');
+            return res.status(400).json({
+                success: false,
+                message: 'Missing ClientReference in callback'
+            });
+        }
+
+        const clientReference = Data.ClientReference;
+        const amount = Data.Amount;
+        const paymentStatus = Data.Status;
+
+        // Check if payment was successful
+        if (ResponseCode !== '0000' || paymentStatus !== 'Success') {
+            console.log('[Deposit] ✗ Payment not successful, status:', paymentStatus);
+            // Update deposit status
+            updateDepositStatus(clientReference, 'failed', { 
+                responseCode: ResponseCode,
+                paymentStatus: paymentStatus,
+                reason: Data.Description || 'Payment failed'
+            });
+            return res.status(200).json({
+                success: false,
+                message: 'Payment failed: ' + (Data.Description || 'Unknown reason')
+            });
+        }
+
+        // Extract userId from reference (DEP_userId_timestamp)
+        const parts = clientReference.split('_');
+        const userId = parts[1];
+
+        if (!userId) {
+            console.log('[Deposit] ✗ Invalid reference format');
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid reference format'
+            });
+        }
+
+        // Get current balance
+        const currentBalance = getUserBalance(userId);
+
+        // Update balance
+        const newBalance = (currentBalance.balance || 0) + amount;
+        const newDeposited = (currentBalance.deposited || 0) + amount;
+        const newWithdrawable = (currentBalance.withdrawable || 0) + amount;
+
+        saveUserBalance(userId, {
+            userId,
+            balance: newBalance,
+            deposited: newDeposited,
+            withdrawable: newWithdrawable,
+            lastUpdated: new Date().toISOString()
+        });
+
+        // Update deposit status
+        updateDepositStatus(clientReference, 'completed', {
+            transactionId: Data.TransactionId,
+            externalTransactionId: Data.ExternalTransactionId,
+            amount: amount,
+            paymentMethod: Data.PaymentDetails?.PaymentType || 'unknown',
+            verifiedAt: new Date().toISOString()
+        });
+
+        console.log('[Deposit] ✓ Payment confirmed and balance updated:', {
+            userId,
+            amount,
+            oldBalance: currentBalance.balance,
+            newBalance,
+            transactionId: Data.TransactionId
+        });
+
+        res.json({
+            success: true,
+            message: 'Payment confirmed and balance updated'
+        });
+
+    } catch (error) {
+        console.error('[Deposit] ✗ Error processing callback:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error processing callback',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * Get payment status
+ * GET /api/deposit/hubtel/status/:reference
+ */
+router.get('/hubtel/status/:reference', async (req, res) => {
+    console.log('[Deposit] Checking HUBTEL payment status for:', req.params.reference);
+
+    try {
+        const { reference } = req.params;
+
+        // Find deposit record
+        const deposits = getAllDeposits();
+        const deposit = deposits.find(d => d.id === reference);
+
+        if (!deposit) {
+            return res.status(404).json({
+                success: false,
+                message: 'Deposit record not found'
+            });
+        }
+
+        // Verify payment if pending
+        if (deposit.status === 'pending' && deposit.transactionId) {
+            const verification = await verifyPayment(deposit.transactionId);
+            
+            if (verification.success && verification.status === 'completed') {
+                // Update deposit status
+                updateDepositStatus(reference, 'completed', {
+                    verifiedAt: new Date().toISOString()
+                });
+                return res.json({
+                    success: true,
+                    status: 'completed',
+                    amount: deposit.amount,
+                    deposit: deposit
+                });
+            }
+        }
+
+        res.json({
+            success: true,
+            status: deposit.status,
+            amount: deposit.amount,
+            deposit: deposit
+        });
+
+    } catch (error) {
+        console.error('[Deposit] Error checking payment status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error checking payment status',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * Verify payment status
+ * GET /api/deposit/verify
+ */
+router.get('/verify', async (req, res) => {
+    console.log('[Deposit] ================== VERIFY PAYMENT ==================');
+    
+    try {
+        const { reference, userId } = req.query;
+
+        if (!reference || !userId) {
+            return res.status(400).json({
+                success: false,
+                verified: false,
+                message: 'reference and userId are required'
+            });
+        }
+
+        // Find deposit record
+        const deposits = getAllDeposits();
+        const deposit = deposits.find(d => d.id === reference && d.userId === userId);
+
+        if (!deposit) {
+            return res.status(404).json({
+                success: false,
+                verified: false,
+                message: 'Deposit record not found'
+            });
+        }
+
+        // Check deposit status
+        if (deposit.status === 'completed') {
+            return res.json({
+                success: true,
+                verified: true,
+                status: 'completed',
+                amount: deposit.amount,
+                message: 'Payment verified successfully'
+            });
+        }
+
+        if (deposit.status === 'pending' && deposit.transactionId) {
+            // Attempt to verify with HUBTEL
+            console.log('[Deposit] Verifying with HUBTEL for:', reference);
+            const verification = await verifyPayment(deposit.transactionId);
+            
+            if (verification.success && verification.status === 'completed') {
+                // Update deposit status
+                updateDepositStatus(reference, 'completed', {
+                    verifiedAt: new Date().toISOString()
+                });
+                return res.json({
+                    success: true,
+                    verified: true,
+                    status: 'completed',
+                    amount: deposit.amount,
+                    message: 'Payment verified successfully'
+                });
+            }
+        }
+
+        // Still pending
+        return res.json({
+            success: true,
+            verified: false,
+            status: deposit.status,
+            amount: deposit.amount,
+            message: 'Payment is still processing, please refresh shortly'
+        });
+
+    } catch (error) {
+        console.error('[Deposit] Error verifying payment:', error);
+        res.status(500).json({
+            success: false,
+            verified: false,
+            message: 'Error verifying payment',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * Helper: Update deposit status
+ */
+function updateDepositStatus(depositId, newStatus, additionalData = {}) {
+    try {
+        const deposits = getAllDeposits();
+        const index = deposits.findIndex(d => d.id === depositId);
+        
+        if (index !== -1) {
+            deposits[index] = {
+                ...deposits[index],
+                status: newStatus,
+                updatedAt: new Date().toISOString(),
+                ...additionalData
+            };
+            saveDeposits(deposits);
+            console.log('[Deposit] Status updated:', { depositId, newStatus });
+        }
+    } catch (error) {
+        console.error('[Deposit] Error updating deposit status:', error);
+    }
+}
+
+/**
  * Check deposit endpoint status
  * GET /api/deposit/status
  */
@@ -513,6 +877,10 @@ router.get('/status', (req, res) => {
         status: 'Deposit endpoint is operational',
         endpoints: {
             'POST /api/deposit/submit': 'Submit a deposit request with screenshot',
+            'POST /api/deposit/hubtel/initiate': 'Initiate HUBTEL payment',
+            'POST /api/deposit/hubtel/callback': 'HUBTEL payment callback',
+            'GET /api/deposit/verify': 'Verify payment status by reference and userId',
+            'GET /api/deposit/hubtel/status/:reference': 'Check HUBTEL payment status',
             'GET /api/deposit/user/:userId': 'Get user deposits',
             'GET /api/deposit/pending': 'Get all pending deposits (admin)',
             'GET /api/deposit/all': 'Get all deposits (admin)',

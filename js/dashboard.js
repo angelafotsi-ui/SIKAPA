@@ -3,7 +3,7 @@
 // API Base URL
 const apiBase = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api'
-    : 'https://sikapa-bwxu.onrender.com/api';
+    : 'https://sikapa-q2i0.onrender.com/api';
 
 // Initialize Dashboard
 document.addEventListener('DOMContentLoaded', function() {

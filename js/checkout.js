@@ -86,7 +86,7 @@ async function handlePaymentSubmit(event) {
 // API Base URL
 const API_BASE_URL = window.location.hostname === 'localhost' 
   ? 'http://localhost:3000/api'
-  : 'https://sikapa-bwxu.onrender.com/api';     amount: amount,
+  : 'https://sikapa-q2i0.onrender.com/api';     amount: amount,
       paymentIntentId: paymentIntent.id,
       status: paymentIntent.status,
       timestamp: new Date(),

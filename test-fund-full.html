@@ -49,7 +49,7 @@
     <div id="production" class="tab-content">
         <div class="box">
             <h2>Test Production Server</h2>
-            <p><strong>URL:</strong> https://sikapa-bwxu.onrender.com/api/fund/update</p>
+            <p><strong>URL:</strong> https://sikapa-q2i0.onrender.com/api/fund/update</p>
             <button onclick="testProduction('add')">➕ Test Add (Production)</button>
             <button onclick="testProduction('deduct')">➖ Test Deduct (Production)</button>
             <pre id="productionResult"></pre>
@@ -108,7 +108,7 @@
 
 🔌 Detected API Base URLs
   For Localhost: http://localhost:3000/api
-  For Production: https://sikapa-bwxu.onrender.com/api
+  For Production: https://sikapa-q2i0.onrender.com/api
 
 🌍 Current Environment
   ${window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '✓ LOCALHOST' : '✓ PRODUCTION'}
@@ -122,7 +122,7 @@
         }
 
         async function testProduction(action) {
-            const result = await testEndpoint('https://sikapa-bwxu.onrender.com/api/fund/update', action, 'productionResult');
+            const result = await testEndpoint('https://sikapa-q2i0.onrender.com/api/fund/update', action, 'productionResult');
         }
 
         async function testEndpoint(url, action, resultElementId) {
@@ -195,7 +195,7 @@
             }
 
             try {
-                const res2 = await fetch('https://sikapa-bwxu.onrender.com/api/fund/status', { method: 'GET' })
+                const res2 = await fetch('https://sikapa-q2i0.onrender.com/api/fund/status', { method: 'GET' })
                     .catch(e => ({ ok: false, error: e.message }));
                 log(`Production /api/fund/status: ${res2.ok ? '✓ OK' : '✗ Error'}`, res2.ok ? 'success' : 'error');
             } catch (e) {

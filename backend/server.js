@@ -22,7 +22,7 @@ app.use(cors({
       'http://localhost:5000',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:5000',
-      'https://sikapa-bwxu.onrender.com'
+      'https://sikapa-q2i0.onrender.com'
     ];
     
     // Add environment-based CORS origin if configured

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recharge Successful - SIKAPA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: scaleIn 0.6s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .success-icon i {
+            font-size: 50px;
+            color: white;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .amount-display {
+            font-size: 42px;
+            color: #667eea;
+            font-weight: 700;
+            margin: 20px 0;
+            letter-spacing: 1px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .amount-label {
+            color: #999;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+
+        .status-message {
+            background: #f0f0ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .status-message p {
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-message p i {
+            color: #667eea;
+        }
+
+        .status-message .sub-text {
+            color: #666;
+            font-size: 12px;
+            margin-left: 26px;
+            margin-top: 5px;
+            font-weight: normal;
+        }
+
+        .security-note {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .security-note i {
+            color: #00b074;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .countdown-section {
+            margin-bottom: 25px;
+        }
+
+        .countdown-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .countdown-timer {
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+            animate: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0ff;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .reference-code {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .reference-code strong {
+            color: #667eea;
+        }
+
+        @media (max-width: 480px) {
+            .success-container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .amount-display {
+                font-size: 36px;
+            }
+
+            .countdown-timer {
+                font-size: 36px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <!-- Success Icon -->
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+
+        <!-- Title -->
+        <h1>Payment Successful! 🎉</h1>
+
+        <!-- Amount Display -->
+        <div class="amount-display" id="amountDisplay">₵0.00</div>
+        <div class="amount-label">Recharge Amount</div>
+
+        <!-- Status Message -->
+        <div class="status-message">
+            <p>
+                <i class="fas fa-clock"></i>
+                <strong>Processing Your Recharge</strong>
+            </p>
+            <div class="sub-text">
+                Your amount will be reflected in your account within <strong>1 - 5 minutes</strong>
+            </div>
+        </div>
+
+        <!-- Security Note -->
+        <div class="security-note">
+            <i class="fas fa-shield-alt"></i>
+            <span><strong>Don't worry, your money is safe.</strong> You can check your transaction details on your banking app.</span>
+        </div>
+
+        <!-- Countdown -->
+        <div class="countdown-section">
+            <div class="countdown-text">Redirecting you to dashboard in:</div>
+            <div class="countdown-timer" id="countdown">3</div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="goToDashboard()">
+                <i class="fas fa-home"></i> Go to Dashboard
+            </button>
+            <a href="deposit.html" class="btn btn-secondary">
+                <i class="fas fa-plus"></i> Recharge Again
+            </a>
+        </div>
+
+        <!-- Reference Code -->
+        <div class="reference-code">
+            <strong>Reference:</strong> <span id="referenceCode">-</span>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name) || '';
+        }
+
+        // Initialize page
+        function initializePage() {
+            const amount = getUrlParameter('amount');
+            const reference = getUrlParameter('reference');
+            const status = getUrlParameter('status');
+
+            // Display amount
+            if (amount) {
+                const numAmount = parseFloat(amount);
+                if (!isNaN(numAmount)) {
+                    document.getElementById('amountDisplay').textContent = '₵' + numAmount.toFixed(2);
+                }
+            }
+
+            // Display reference code
+            if (reference) {
+                document.getElementById('referenceCode').textContent = reference;
+            }
+
+            // Start countdown
+            startCountdown();
+
+            // Verify payment status if needed
+            if (reference && status !== 'success') {
+                verifyPaymentStatus(reference);
+            }
+        }
+
+        // Countdown timer
+        function startCountdown() {
+            let count = 3;
+            const countdownElement = document.getElementById('countdown');
+
+            const interval = setInterval(() => {
+                count--;
+                countdownElement.textContent = count;
+
+                if (count <= 0) {
+                    clearInterval(interval);
+                    goToDashboard();
+                }
+            }, 1000);
+        }
+
+        // Redirect to dashboard
+        function goToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Verify payment status with backend
+        function verifyPaymentStatus(reference) {
+            const userId = localStorage.getItem('userId');
+
+            if (!userId) {
+                console.warn('User ID not found');
+                return;
+            }
+
+            fetch(`/api/deposit/verify?reference=${reference}&userId=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.verified) {
+                        console.log('✓ Payment verified successfully');
+                        // Update UI if needed
+                    } else {
+                        console.warn('Payment verification pending...');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error verifying payment:', error);
+                });
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initializePage);
+    </script>
+</body>
+</html>
