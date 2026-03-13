@@ -3,266 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recharge Account - SIKAPA</title>
+    <title>Deposit - SIKAPA</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            padding: 1rem;
-        }
-
-        .deposit-card {
-            max-width: 500px;
-            width: 100%;
+        .deposit-container {
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 2.5rem;
-            animation: slideUp 0.5s ease-out;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .back-button {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #667eea;
-            text-decoration: none;
-            margin-bottom: 1.5rem;
-            cursor: pointer;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .back-button:hover {
-            color: #764ba2;
-        }
-
-        .card-header {
+        .deposit-container h1 {
             text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .card-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .card-title {
-            font-size: 1.8rem;
-            color: #333;
+            color: #667eea;
             margin-bottom: 0.5rem;
-            font-weight: 700;
+            font-size: 2rem;
         }
 
-        .card-subtitle {
-            font-size: 1rem;
-            color: #666;
-            margin-bottom: 1rem;
-        }
-
-        .card-description {
-            font-size: 0.95rem;
-            color: #777;
-            line-height: 1.6;
+        .deposit-subtitle {
+            text-align: center;
+            color: #999;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
         }
 
         .form-group {
             margin-bottom: 1.5rem;
         }
 
-        .form-label {
+        .form-group label {
             display: block;
-            font-size: 0.95rem;
-            font-weight: 600;
+            margin-bottom: 0.5rem;
             color: #333;
-            margin-bottom: 0.7rem;
+            font-weight: 600;
+            font-size: 1rem;
         }
 
-        .amount-grid {
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .momo-info {
+            background: #f0f0ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+        }
+
+        .momo-info h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .momo-info p {
+            color: #333;
+            margin: 0.3rem 0;
+        }
+
+        .momo-number {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #667eea;
+        }
+
+        .momo-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .amount-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .amount-quick-select {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-top: 0.7rem;
-            margin-bottom: 0.5rem;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
         }
 
         .amount-btn {
-            padding: 1rem;
-            border: 2px solid #e0e0e0;
+            padding: 0.8rem;
+            border: 2px solid #ddd;
             background: white;
             color: #333;
-            border-radius: 10px;
+            border-radius: 5px;
             cursor: pointer;
-            font-weight: 700;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 0.9rem;
         }
 
         .amount-btn:hover {
             border-color: #667eea;
-            background: #f8f9ff;
-            transform: translateY(-2px);
+            background: #f0f0ff;
         }
 
         .amount-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #667eea;
             color: white;
-            border-color: transparent;
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .custom-amount-section {
-            display: none;
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f0f0ff;
-            border-radius: 8px;
-        }
-
-        .custom-amount-section.show {
-            display: block;
-        }
-
-        .custom-amount-input {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .custom-amount-input input {
-            flex: 1;
-            padding: 0.8rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .custom-amount-input input:focus {
-            outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 8px rgba(102, 126, 234, 0.2);
         }
 
-        .custom-amount-currency {
-            font-weight: 700;
-            color: #667eea;
-            font-size: 1.1rem;
-        }
-
-        .custom-amount-help {
-            font-size: 0.85rem;
-            color: #999;
-            margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .info-banner {
-            background: #f0f0ff;
-            border-left: 4px solid #667eea;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            margin-top: 1.5rem;
-        }
-
-        .info-banner-text {
-            color: #667eea;
-            font-size: 0.9rem;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-        }
-
-        .customer-fields {
-            background: #f9f9ff;
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
-        }
-
-        .customer-fields .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .customer-fields .form-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.9rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
             transition: all 0.3s;
-            font-family: inherit;
+            background: #f9f9f9;
         }
 
-        .form-input:focus {
-            outline: none;
+        .upload-area:hover {
             border-color: #667eea;
-            box-shadow: 0 0 8px rgba(102, 126, 234, 0.2);
+            background: #f0f0ff;
         }
 
-        .form-input::placeholder {
-            color: #999;
+        .upload-area.active {
+            border-color: #667eea;
+            background: #f0f0ff;
         }
 
-        .error-message {
-            color: #e74c3c;
+        .upload-area p {
+            color: #666;
+            margin: 0.5rem 0;
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-name {
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .upload-hint {
             font-size: 0.85rem;
-            margin-top: 0.4rem;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
+            color: #999;
+            margin-top: 0.3rem;
         }
 
         .submit-button {
             width: 100%;
-            padding: 1.2rem;
+            padding: 1rem;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 1.05rem;
-            font-weight: 700;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 2rem;
         }
 
         .submit-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
         }
 
         .submit-button:disabled {
@@ -271,175 +192,156 @@
             transform: none;
         }
 
-        .submit-button:active {
-            transform: translateY(0);
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+            padding: 0.5rem;
+            background: #fadbd8;
+            border-radius: 5px;
         }
 
-        .button-icon {
-            margin-right: 0.5rem;
+        .success-message {
+            color: #27ae60;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+            padding: 0.5rem;
+            background: #d5f4e6;
+            border-radius: 5px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .info-box p {
+            color: #1565c0;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .back-button:hover {
+            color: #764ba2;
         }
 
         .loading-spinner {
             display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 0.7rem;
-            vertical-align: middle;
+            margin-right: 0.5rem;
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .success-message {
-            background: #d5f4e6;
-            border-left: 4px solid #27ae60;
-            color: #27ae60;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
-        .error-box {
-            background: #fadbd8;
-            border-left: 4px solid #e74c3c;
-            color: #c0392b;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
-        .error-box.show {
-            display: block;
-        }
-
-        @media (max-width: 480px) {
-            .deposit-card {
+        @media (max-width: 768px) {
+            .deposit-container {
+                margin: 1rem;
                 padding: 1.5rem;
             }
 
-            .card-title {
-                font-size: 1.5rem;
-            }
-
-            .card-icon {
-                font-size: 2.5rem;
-            }
-
-            .amount-grid {
-                grid-template-columns: 1fr;
-                gap: 0.8rem;
-            }
-
-            .deposit-card {
-                border-radius: 15px;
+            .amount-quick-select {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 <body>
-    <div class="deposit-card">
+    <div class="deposit-container">
         <a class="back-button" onclick="goBack()">
             <i class="fas fa-arrow-left"></i> Back
         </a>
 
-        <div class="card-header">
-            <div class="card-icon">💰</div>
-            <h1 class="card-title">RECHARGE ACCOUNT</h1>
-            <p class="card-subtitle">Your deposit will be credited instantly</p>
+        <h1>💰 Confirm Deposit</h1>
+        <p class="deposit-subtitle">Send funds to the account below</p>
+
+        <div class="info-box">
+            <p><i class="fas fa-info-circle"></i> Your deposit will be credited within 1 - 5 minutes</p>
         </div>
 
         <form id="depositForm">
-            <!-- Success Message -->
-            <div class="success-message" id="successMessage">
-                <i class="fas fa-check-circle"></i> Processing payment...
-            </div>
-
-            <!-- Error Message -->
-            <div class="error-box" id="errorBox"></div>
-
-            <!-- Amount Selection -->
-            <div class="form-group">
-                <label class="form-label">Select Amount *</label>
-                <div class="amount-grid">
-                    <button type="button" class="amount-btn" data-amount="30" onclick="selectAmount(30)">
-                        ₵30
-                    </button>
-                    <button type="button" class="amount-btn" data-amount="100" onclick="selectAmount(100)">
-                        ₵100
-                    </button>
-                    <button type="button" class="amount-btn" data-amount="250" onclick="selectAmount(250)">
-                        ₵250
-                    </button>
-                    <button type="button" class="amount-btn" data-amount="500" onclick="selectAmount(500)">
-                        ₵500
-                    </button>
-                    <button type="button" class="amount-btn" data-amount="custom" onclick="selectAmount('custom')">
-                        💡 Custom
-                    </button>
-                </div>
-
-                <!-- Custom Amount Input -->
-                <div class="custom-amount-section" id="customAmountSection">
-                    <div class="custom-amount-input">
-                        <span class="custom-amount-currency">₵</span>
-                        <input 
-                            type="number" 
-                            id="customAmountInput" 
-                            placeholder="Enter amount (min ₵1)"
-                            min="1"
-                            step="0.01"
-                            onchange="updateCustomAmount()">
-                    </div>
-                    <div class="custom-amount-help">
-                        <i class="fas fa-info-circle"></i>
-                        Minimum amount: ₵1.00
-                    </div>
-                </div>
-
-                <div class="error-message" id="amountError"></div>
-                <input type="hidden" id="selectedAmount" value="">
-            </div>
-
-            <!-- Info Banner -->
-            <div class="info-banner">
-                <p class="info-banner-text">
-                    <i class="fas fa-credit-card"></i>
-                    Instant payment via card or mobile money
+            <!-- SIKAPA SHORTCODE Section -->
+            <div class="momo-info">
+                <h3>📱 Dial this SIKAPA shortcode to make payment</h3>
+                <p class="form-group">
+                    <label>SHORTCODE *</label>
+                    <input type="text" id="momoNumber" value="713*4624#" readonly>
+                </p>
+                <p class="form-group">
+                    <label>SHORTCODE Name *</label>
+                    <input type="text" id="momoName" value="SIKAPA GHANA LIMITED" readonly>
                 </p>
             </div>
 
-            <!-- Customer Information -->
-            <div class="customer-fields">
-                <div class="form-group">
-                    <label class="form-label" for="customerEmail">Email Address *</label>
-                    <input 
-                        type="email" 
-                        id="customerEmail" 
-                        class="form-input"
-                        placeholder="Enter your email address"
-                        required>
-                    <div class="error-message" id="customerEmailError"></div>
+            <!-- Sender Name -->
+            <div class="form-group">
+                <label for="senderName">Name of Sender *</label>
+                <input type="text" id="senderName" placeholder="Enter the Sender Name" required>
+                <span class="error-message" id="senderNameError"></span>
+            </div>
+
+            <!-- Sender Number -->
+            <div class="form-group">
+                <label for="senderNumber">Sender Number *</label>
+                <input type="text" id="senderNumber" placeholder="Enter the Sender Number" required>
+                <span class="error-message" id="senderNumberError"></span>
+            </div>
+
+            <!-- Amount Selection -->
+            <div class="amount-section">
+                <label>Amount *</label>
+                <div class="amount-quick-select">
+                    <button type="button" class="amount-btn" data-amount="30" onclick="selectAmount(30)">₵30</button>
+                    <button type="button" class="amount-btn" data-amount="100" onclick="selectAmount(100)">₵100</button>
+                    <button type="button" class="amount-btn" data-amount="250" onclick="selectAmount(250)">₵250</button>
+                    <button type="button" class="amount-btn" data-amount="500" onclick="selectAmount(500)">₵500</button>
                 </div>
+                <input type="hidden" id="selectedAmount" value="">
+                <span class="error-message" id="amountError"></span>
+            </div>
+
+            <!-- Screenshot Upload -->
+            <div class="form-group">
+                <label for="screenshotUpload">Upload Screenshot *</label>
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('screenshotUpload').click()">
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <p style="font-weight: 600; color: #333;">Click to upload or drag and drop</p>
+                    <p class="upload-hint">PNG, JPG, or GIF (max. 5MB)</p>
+                    <p class="file-name" id="fileName"></p>
+                </div>
+                <input type="file" id="screenshotUpload" accept="image/png,image/jpeg,image/gif" style="display: none;" required>
+                <span class="error-message" id="screenshotError"></span>
             </div>
 
             <!-- Submit Button -->
             <button type="submit" class="submit-button" id="submitBtn">
-                <span class="button-icon">💳</span>
-                <span id="submitText">Make Payment Now</span>
+                <span id="submitText">Confirm Deposit</span>
             </button>
+
+            <span class="success-message" id="successMessage" style="display: none;"></span>
+            <span class="error-message" id="formError" style="display: none;"></span>
         </form>
-    </div>
 
     <script src="js/auth.js"></script>
     <script>
@@ -447,21 +349,46 @@
             ? 'http://localhost:3000/api'
             : 'https://sikapa-q2i0.onrender.com/api';
 
-        // Check user authentication on page load
+        let selectedFile = null;
+
+        // Check user authentication
         document.addEventListener('DOMContentLoaded', function() {
             if (!isUserLoggedIn()) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // Set form submission handler
-            document.getElementById('depositForm').addEventListener('submit', handlePayment);
+            // Setup drag and drop for file upload
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('screenshotUpload');
 
-            // Pre-fill customer name if available
-            const userEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
-            if (userEmail) {
-                document.getElementById('customerEmail').value = userEmail;
-            }
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('active');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('active');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('active');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelection(files[0]);
+                    fileInput.files = files;
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelection(e.target.files[0]);
+                }
+            });
+
+            // Form submission
+            document.getElementById('depositForm').addEventListener('submit', submitDeposit);
         });
 
         function selectAmount(amount) {
@@ -472,147 +399,120 @@
 
             // Add active class to clicked button
             event.target.classList.add('active');
-
-            // Show/hide custom amount input
-            const customSection = document.getElementById('customAmountSection');
-            if (amount === 'custom') {
-                customSection.classList.add('show');
-                document.getElementById('selectedAmount').value = '';
-                document.getElementById('customAmountInput').focus();
-            } else {
-                customSection.classList.remove('show');
-                document.getElementById('selectedAmount').value = amount;
-            }
-            
-            clearError('amountError');
-        }
-
-        function updateCustomAmount() {
-            const customInput = document.getElementById('customAmountInput');
-            const amount = parseFloat(customInput.value);
-
-            if (!customInput.value) {
-                clearError('amountError');
-                return;
-            }
-
-            if (isNaN(amount) || amount < 1) {
-                showError('amountError', 'Minimum amount is ₵1.00');
-                return;
-            }
-
             document.getElementById('selectedAmount').value = amount;
-            clearError('amountError');
+            document.getElementById('amountError').textContent = '';
         }
 
-        function clearError(elementId) {
-            const errorElement = document.getElementById(elementId);
-            if (errorElement) {
-                errorElement.textContent = '';
-                errorElement.classList.remove('show');
+        function handleFileSelection(file) {
+            // Validate file
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedTypes = ['image/png', 'image/jpeg', 'image/gif'];
+
+            if (!allowedTypes.includes(file.type)) {
+                document.getElementById('screenshotError').textContent = 'Only PNG, JPG, or GIF files are allowed';
+                return;
             }
-        }
 
-        function showError(elementId, message) {
-            const errorElement = document.getElementById(elementId);
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.classList.add('show');
+            if (file.size > maxSize) {
+                document.getElementById('screenshotError').textContent = 'File size must be less than 5MB';
+                return;
             }
+
+            selectedFile = file;
+            document.getElementById('fileName').textContent = `✓ ${file.name}`;
+            document.getElementById('screenshotError').textContent = '';
         }
 
-        function showErrorBox(message) {
-            const errorBox = document.getElementById('errorBox');
-            errorBox.textContent = message;
-            errorBox.classList.add('show');
-            setTimeout(() => {
-                errorBox.classList.remove('show');
-            }, 5000);
-        }
-
-        async function handlePayment(e) {
+        async function submitDeposit(e) {
             e.preventDefault();
 
-            // Clear all error messages
-            document.getElementById('errorBox').classList.remove('show');
-            document.getElementById('successMessage').classList.remove('show');
-            clearError('amountError');
-            clearError('customerEmailError');
+            // Clear previous messages
+            document.getElementById('formError').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
 
-            // Get form values
+            // Validate inputs
+            const senderName = document.getElementById('senderName').value.trim();
+            const senderNumber = document.getElementById('senderNumber').value.trim();
             const amount = document.getElementById('selectedAmount').value;
-            const customerEmail = document.getElementById('customerEmail').value.trim();
 
-            // Validation
+            if (!senderName) {
+                document.getElementById('senderNameError').textContent = 'Sender name is required';
+                return;
+            }
+
+            if (!senderNumber) {
+                document.getElementById('senderNumberError').textContent = 'Sender number is required';
+                return;
+            }
+
             if (!amount) {
-                showError('amountError', 'Please select an amount');
+                document.getElementById('amountError').textContent = 'Please select an amount';
                 return;
             }
 
-            const amountNum = parseFloat(amount);
-            if (isNaN(amountNum) || amountNum < 1) {
-                showError('amountError', 'Amount must be at least ₵1.00');
+            if (!selectedFile) {
+                document.getElementById('screenshotError').textContent = 'Please upload a screenshot';
                 return;
             }
 
-            if (!customerEmail) {
-                showError('customerEmailError', 'Email address is required');
-                return;
-            }
+            // Clear error messages
+            document.getElementById('senderNameError').textContent = '';
+            document.getElementById('senderNumberError').textContent = '';
+            document.getElementById('amountError').textContent = '';
+            document.getElementById('screenshotError').textContent = '';
 
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
-                showError('customerEmailError', 'Please enter a valid email address');
-                return;
-            }
-
-            const submitBtn = document.getElementById('submitBtn');
-            const submitText = document.getElementById('submitText');
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('userId', localStorage.getItem('userId') || localStorage.getItem('user_uid'));
+            formData.append('senderName', senderName);
+            formData.append('senderNumber', senderNumber);
+            formData.append('amount', parseFloat(amount));
+            formData.append('momoNumber', '713*4624#');
+            formData.append('momoName', 'SIKAPA GHANA LIMITED');
+            formData.append('screenshot', selectedFile);
 
             try {
+                const submitBtn = document.getElementById('submitBtn');
                 submitBtn.disabled = true;
-                submitText.innerHTML = '<span class="loading-spinner"></span>Processing...';
+                document.getElementById('submitText').innerHTML = '<span class="loading-spinner"></span>Processing...';
 
-                // Get userId
-                const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
-
-                // Get the base URL for return URL
-                const baseUrl = window.location.origin || 'http://localhost:3000';
-                const returnUrl = `${baseUrl}/deposit-success.html?amount=${parseFloat(amount)}&reference={reference}`;
-
-                // Make API call to initiate HUBTEL payment
-                const response = await fetch(`${apiBase}/deposit/hubtel/initiate`, {
+                const response = await fetch(`${apiBase}/deposit/submit`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('auth_token')}`
                     },
-                    body: JSON.stringify({
-                        userId: userId,
-                        customerEmail: customerEmail,
-                        amount: parseFloat(amount),
-                        returnUrl: returnUrl
-                    })
+                    body: formData
                 });
 
                 const data = await response.json();
 
-                if (response.ok && data.success && data.paymentUrl) {
-                    document.getElementById('successMessage').classList.add('show');
-                    
-                    // Redirect to HUBTEL payment gateway
+                if (response.ok && data.success) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('successMessage').textContent = '✓ Deposit request submitted successfully! Your admin will review it soon.';
+
+                    // Reset form
+                    document.getElementById('depositForm').reset();
+                    document.getElementById('selectedAmount').value = '';
+                    document.getElementById('fileName').textContent = '';
+                    selectedFile = null;
+                    document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+
+                    // Redirect to dashboard after 2 seconds
                     setTimeout(() => {
-                        window.location.href = data.paymentUrl;
-                    }, 1500);
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
                 } else {
-                    showErrorBox(data.message || 'Failed to initiate payment. Please try again.');
-                    submitBtn.disabled = false;
-                    submitText.innerHTML = '💳 Make Payment Now';
+                    document.getElementById('formError').style.display = 'block';
+                    document.getElementById('formError').textContent = data.message || 'Failed to submit deposit request';
                 }
             } catch (error) {
-                console.error('Payment error:', error);
-                showErrorBox('An error occurred: ' + error.message);
+                console.error('Error submitting deposit:', error);
+                document.getElementById('formError').style.display = 'block';
+                document.getElementById('formError').textContent = 'Error submitting deposit: ' + error.message;
+            } finally {
+                const submitBtn = document.getElementById('submitBtn');
                 submitBtn.disabled = false;
-                submitText.innerHTML = '💳 Make Payment Now';
+                document.getElementById('submitText').innerHTML = 'Confirm Deposit';
             }
         }
 
