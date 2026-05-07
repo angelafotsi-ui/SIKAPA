@@ -94,7 +94,7 @@ body::before {
 }
 
 .auth-header h1 {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #37017a 0%, #37017a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -141,9 +141,9 @@ body::before {
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #37017a;
   background: white;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 0 0 4px rgba(55, 1, 122, 0.15);
   transform: translateY(-2px);
 }
 
@@ -154,7 +154,7 @@ body::before {
 .submit-button {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #37017a 0%, #37017a 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -164,7 +164,7 @@ body::before {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 20px;
   letter-spacing: 0.5px;
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 30px rgba(55, 1, 122, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -183,7 +183,7 @@ body::before {
 
 .submit-button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 15px 40px rgba(55, 1, 122, 0.4);
 }
 
 .submit-button:active {
@@ -252,7 +252,7 @@ body::before {
 }
 
 .auth-footer a {
-  color: #667eea;
+  color: #37017a;
   text-decoration: none;
   font-weight: 700;
   transition: all 0.3s;
@@ -267,12 +267,12 @@ body::before {
   height: 2px;
   bottom: -2px;
   left: 0;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, #37017a, #37017a);
   transition: width 0.3s ease;
 }
 
 .auth-footer a:hover {
-  color: #764ba2;
+  color: #37017a;
 }
 
 .auth-footer a:hover::after {

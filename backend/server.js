@@ -93,6 +93,7 @@ const userRoutes = require('./routes/user');
 const tierRoutes = require('./routes/tiers');
 const depositRoutes = require('./routes/deposit');
 const emailRoutes = require('./routes/email');
+const supportRoutes = require('./routes/support');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
@@ -107,6 +108,7 @@ app.use('/api/balance', balanceRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/tiers', tierRoutes);
 app.use('/api/email', emailRoutes);
+app.use('/api/support', supportRoutes);
 app.use('/api', healthRoutes);
 
 console.log('[3] API routes mounted');
@@ -119,8 +121,13 @@ app.use(express.static(path.join(__dirname, '..')));
 
 console.log('[4] Static files configured');
 
-// Serve auth.html for root path (authentication gateway)
+// Public homepage
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
+// Keep auth gateway accessible (legacy + explicit)
+app.get('/auth', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'auth.html'));
 });
 

@@ -3,6 +3,19 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
+function readJsonFile(filePath, fallback) {
+    try {
+        if (!fs.existsSync(filePath)) {
+            return fallback;
+        }
+        const data = fs.readFileSync(filePath, 'utf-8');
+        return JSON.parse(data || JSON.stringify(fallback));
+    } catch (error) {
+        console.error(`[User] Failed to read JSON file ${filePath}:`, error.message);
+        return fallback;
+    }
+}
+
 // Get user statistics
 router.get('/stats/:userId', (req, res) => {
     try {
@@ -228,6 +241,73 @@ router.get('/stats/:userId', (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to get user statistics'
+        });
+    }
+});
+
+// Get user financial summary (Total Inflow / Total Outflow)
+router.get('/financial-summary/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const marketOutflow = parseFloat(req.query.marketOutflow || '0') || 0;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: 'User ID is required'
+            });
+        }
+
+        const depositPath = path.join(__dirname, '../logs/deposit_requests.json');
+        const withdrawPath = path.join(__dirname, '../logs/withdraw_requests.json');
+        const cashoutPath = path.join(__dirname, '../logs/cashout_requests.json');
+        const tierEarningsPath = path.join(__dirname, '../logs/tier_earnings.json');
+        const referralsPath = path.join(__dirname, '../logs/referrals.json');
+
+        const deposits = readJsonFile(depositPath, []);
+        const withdrawals = readJsonFile(withdrawPath, []);
+        const cashouts = readJsonFile(cashoutPath, []);
+        const tierEarnings = readJsonFile(tierEarningsPath, {});
+        const referrals = readJsonFile(referralsPath, {});
+
+        const approvedDepositInflow = deposits
+            .filter(d => d.userId === userId && d.status === 'approved')
+            .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+
+        const approvedWithdrawOutflow = withdrawals
+            .filter(w => w.userId === userId && ['approved', 'completed', 'success'].includes((w.status || '').toLowerCase()))
+            .reduce((sum, w) => sum + parseFloat(w.amount || 0), 0);
+
+        const approvedCashoutOutflow = cashouts
+            .filter(c => c.userId === userId && ['approved', 'completed', 'success'].includes((c.status || '').toLowerCase()))
+            .reduce((sum, c) => sum + parseFloat(c.amount || 0), 0);
+
+        const totalTierEarnings = tierEarnings[userId]?.totalEarned || 0;
+
+        // Reuse referral commission logic (1% of approved referred-user deposits)
+        const referralCode = `SKP${userId.substring(0, 8).toUpperCase()}`;
+        const referredUsers = referrals[referralCode]?.referredUsers || [];
+        const referredUserIds = referredUsers.map(u => u.userId);
+        const totalReferredDeposits = deposits
+            .filter(d => referredUserIds.includes(d.userId) && d.status === 'approved')
+            .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+        const referralCommission = totalReferredDeposits * 0.01;
+
+        const totalInflow = approvedDepositInflow + totalTierEarnings + referralCommission;
+        const totalOutflow = approvedWithdrawOutflow + approvedCashoutOutflow + marketOutflow;
+
+        return res.json({
+            success: true,
+            summary: {
+                totalInflow: parseFloat(totalInflow.toFixed(2)),
+                totalOutflow: parseFloat(totalOutflow.toFixed(2))
+            }
+        });
+    } catch (error) {
+        console.error('[User] Error getting financial summary:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to get financial summary'
         });
     }
 });

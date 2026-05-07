@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #37017a 0%, #37017a 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -72,7 +72,7 @@
         textarea:focus,
         select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #37017a;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
@@ -84,7 +84,7 @@
         .btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #37017a 0%, #37017a 100%);
             color: white;
             border: none;
             border-radius: 6px;
@@ -151,14 +151,14 @@
             cursor: pointer;
             font-size: 12px;
             font-weight: 600;
-            color: #667eea;
+            color: #37017a;
             transition: all 0.2s;
         }
 
         .quick-btn:hover {
-            background: #667eea;
+            background: #37017a;
             color: white;
-            border-color: #667eea;
+            border-color: #37017a;
         }
 
         .response {
@@ -331,7 +331,7 @@
                 document.getElementById('reference').value = 'TXN-' + Date.now();
             } else if (type === 'custom') {
                 document.getElementById('subject').value = 'Test Subject';
-                document.getElementById('htmlContent').value = '<h2 style="color: #667eea;">Hello!</h2><p>This is a test email from SIKAPA.</p>';
+                document.getElementById('htmlContent').value = '<h2 style="color: #37017a;">Hello!</h2><p>This is a test email from SIKAPA.</p>';
             }
         }
 

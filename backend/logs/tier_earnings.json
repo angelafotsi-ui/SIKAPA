@@ -1,6 +1,6 @@
 {
   "aU1rCqPO3SclZfIqbQMOKr7h2H02": {
-    "totalEarned": 121.5,
+    "totalEarned": 242,
     "withdrawn": 61,
     "claims": [
       {
@@ -32,6 +32,24 @@
         "tierName": "Starter",
         "reward": 0.5,
         "claimedAt": "2026-03-05T18:09:05.099Z"
+      },
+      {
+        "tierId": 3,
+        "tierName": "Platinum",
+        "reward": 60,
+        "claimedAt": "2026-03-13T18:49:59.743Z"
+      },
+      {
+        "tierId": 0,
+        "tierName": "Starter",
+        "reward": 0.5,
+        "claimedAt": "2026-03-13T18:50:03.446Z"
+      },
+      {
+        "tierId": 3,
+        "tierName": "Platinum",
+        "reward": 60,
+        "claimedAt": "2026-05-01T13:57:00.604Z"
       }
     ]
   },

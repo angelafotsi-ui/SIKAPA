@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="true">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#37017a">
     <title>Dashboard - Sikapa</title>
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -41,43 +41,30 @@
 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon revenue">
-                            <i class="fas fa-chart-line"></i>
+                        <div class="stat-icon inflow">
+                            <i class="fas fa-arrow-down"></i>
                         </div>
                         <div class="stat-info">
-                            <p class="stat-label">Total Revenue</p>
-                            <p class="stat-value">₵ <span id="totalRevenue">0.00</span></p>
+                            <p class="stat-label">Total Inflow</p>
+                            <p class="stat-value">₵ <span id="totalInflow">0.00</span></p>
                         </div>
                     </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon commission">
-                            <i class="fas fa-gift"></i>
+                        <div class="stat-icon outflow">
+                            <i class="fas fa-arrow-up"></i>
                         </div>
                         <div class="stat-info">
-                            <p class="stat-label">Commission Today</p>
-                            <p class="stat-value">₵ <span id="commissionToday">0.00</span></p>
+                            <p class="stat-label">Total Outflow</p>
+                            <p class="stat-value">₵ <span id="totalOutflow">0.00</span></p>
                         </div>
                     </div>
+                </div>
 
-                    <div class="stat-card">
-                        <div class="stat-icon earning">
-                            <i class="fas fa-coins"></i>
-                        </div>
-                        <div class="stat-info">
-                            <p class="stat-label">Today's Earning</p>
-                            <p class="stat-value">₵ <span id="todayEarning">0.00</span></p>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon recharge">
-                            <i class="fas fa-bolt"></i>
-                        </div>
-                        <div class="stat-info">
-                            <p class="stat-label">Recharge Amount</p>
-                            <p class="stat-value">₵ <span id="rechargeAmount">0.00</span></p>
-                        </div>
+                <div class="recent-activities">
+                    <h3>Recent Activities</h3>
+                    <div id="activitiesList" class="activities-list">
+                        <p class="no-data">No active trades</p>
                     </div>
                 </div>
 
@@ -89,96 +76,99 @@
                 </div>
             </div>
 
-            <!-- Quantify/Task Tab -->
+            <!-- Market Tab -->
             <div id="quantify-tab" class="tab-pane">
-                <div class="quantify-header">
-                    <h1>Quantify Tasks</h1>
-                    <p>Complete tasks and earn rewards through tiers</p>
+                <div class="market-header">
+                    <h1>Investment Market</h1>
+                    <p>Invest in crypto and livestock opportunities</p>
                 </div>
 
-                <!-- Withdrawable Balance Card -->
-                <div class="withdrawable-balance-section">
+                <!-- Available Balance Section -->
+                <div class="market-balance-section">
                     <div class="balance-card">
-                        <p class="label">Withdrawable Amount</p>
-                        <p class="amount">₵ <span id="withdrawableAmount">0.00</span></p>
-                    </div>
-
-                    <div class="task-stats">
-                        <div class="task-stat">
-                            <p class="label">Tier Claimed Today</p>
-                            <p class="value" id="tierClaimedToday">0</p>
-                        </div>
-                        <div class="task-stat">
-                            <p class="label">Total Tier Earnings</p>
-                            <p class="value">₵ <span id="tierEarnings">0.00</span></p>
-                        </div>
+                        <p class="label">Available Balance</p>
+                        <p class="amount">₵ <span id="marketAvailableBalance">0.00</span></p>
                     </div>
                 </div>
 
-                <!-- Tier Cards -->
-                <div class="tiers-container">
-                    <div id="tiersList" class="tiers-list">
-                        <!-- Tiers will be loaded here -->
+                <!-- Crypto Market Status Section -->
+                <div class="crypto-status-section">
+                    <h2 class="crypto-status-title">
+                        <i class="fas fa-chart-line"></i> Crypto Market Status
+                    </h2>
+                    <div id="cryptoStatusCards" class="crypto-status-container">
+                        <!-- Crypto status cards with live charts will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Crypto Market Section -->
+                <div class="market-section">
+                    <h2 class="market-title">
+                        <i class="fas fa-coins"></i> Crypto Market
+                    </h2>
+                    <div id="cryptoMarketCards" class="market-cards-container">
+                        <!-- Crypto market cards will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Livestock Market Section -->
+                <div class="market-section">
+                    <h2 class="market-title">
+                        <i class="fas fa-leaf"></i> Livestock Market
+                    </h2>
+                    <div id="livestockMarketCards" class="market-cards-container">
+                        <!-- Livestock market cards will be loaded here -->
                     </div>
                 </div>
             </div>
 
-            <!-- Invite Friends Tab -->
+            <!-- Support Tab -->
             <div id="invite-tab" class="tab-pane">
                 <div class="invite-header">
-                    <h1>Invite Friends</h1>
-                    <p>Earn commission from referrals</p>
+                    <h1>Help &amp; Support</h1>
+                    <p>Live Assistance</p>
                 </div>
 
-                <div class="referral-info">
-                    <div class="referral-code-box">
-                        <p class="label">Your Referral Code</p>
-                        <div class="code-display">
-                            <span id="referralCode">LOADING...</span>
-                            <button class="copy-btn" onclick="copyReferralCode()">
-                                <i class="fas fa-copy"></i>
-                            </button>
+                <div class="referrals-list support-chat-card">
+                    <h3>Investment Support</h3>
+                    <p class="support-subtitle">Usually replies immediately</p>
+                    <div id="supportMessages" class="support-messages">
+                        <div class="support-message support-message-admin">
+                            <div class="support-bubble">
+                                <h4>System Agent</h4>
+                                <p id="supportWelcomeMessage">Hello! Welcome to Sikapa Ghana support. Leave us a message below and our team will assist you shortly.</p>
+                            </div>
                         </div>
                     </div>
+                    <div class="link-display support-input-row">
+                        <input type="text" id="supportInput" placeholder="Type your message here...">
+                        <button class="copy-btn" onclick="sendSupportMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
 
-                    <div class="referral-link-box">
-                        <p class="label">Referral Link</p>
-                        <div class="link-display">
-                            <input type="text" id="referralLink" readonly>
-                            <button class="copy-btn" onclick="copyReferralLink()">
-                                <i class="fas fa-copy"></i>
-                            </button>
+                <div class="referrals-list support-address-card">
+                    <h3>Sikapa Ghana Regional Hub</h3>
+                    <div class="friends-list">
+                        <div class="friend-card">
+                            <div class="friend-info">
+                                <div class="support-address-row">
+                                    <div class="support-address-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>Adiza Plaza, Madina - Accra, Ghana</span>
+                                    </div>
+                                    <div class="support-address-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span>Mon - Sat (7:30 AM - 6:30 PM)</span>
+                                    </div>
+                                    <div class="support-address-item">
+                                        <i class="fas fa-envelope"></i>
+                                        <span>sikapaghana96@gmail.com</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="referral-stats">
-                    <div class="stat-box">
-                        <p class="label">Friends Invited</p>
-                        <p class="value" id="friendsInvited">0</p>
-                    </div>
-                    <div class="stat-box">
-                        <p class="label">Commission Earned</p>
-                        <p class="value">₵ <span id="referralCommission">0.00</span></p>
-                    </div>
-                </div>
-
-                <div class="share-buttons">
-                    <button class="share-btn whatsapp" onclick="shareViaWhatsapp()">
-                        <i class="fab fa-whatsapp"></i> Share on WhatsApp
-                    </button>
-                    <button class="share-btn facebook" onclick="shareViaFacebook()">
-                        <i class="fab fa-facebook"></i> Share on Facebook
-                    </button>
-                    <button class="share-btn twitter" onclick="shareViaTwitter()">
-                        <i class="fab fa-twitter"></i> Share on Twitter
-                    </button>
-                </div>
-
-                <div class="referrals-list">
-                    <h3>Invited Friends</h3>
-                    <div id="referralsList" class="friends-list">
-                        <p class="no-data">No referrals yet</p>
                     </div>
                 </div>
             </div>
@@ -213,41 +203,21 @@
                 <div class="profile-stats">
                     <div class="profile-stat-card">
                         <div class="stat-icon">
-                            <i class="fas fa-wallet"></i>
+                            <i class="fas fa-arrow-down"></i>
                         </div>
                         <div class="stat-detail">
-                            <p class="label">Total Revenue</p>
-                            <p class="value">₵ <span id="profileTotalRevenue">0.00</span></p>
+                            <p class="label">Total Inflow</p>
+                            <p class="value">₵ <span id="profileTotalInflow">0.00</span></p>
                         </div>
                     </div>
 
                     <div class="profile-stat-card">
                         <div class="stat-icon">
-                            <i class="fas fa-gift"></i>
+                            <i class="fas fa-arrow-up"></i>
                         </div>
                         <div class="stat-detail">
-                            <p class="label">Commission Today</p>
-                            <p class="value">₵ <span id="profileCommissionToday">0.00</span></p>
-                        </div>
-                    </div>
-
-                    <div class="profile-stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-fire"></i>
-                        </div>
-                        <div class="stat-detail">
-                            <p class="label">Today's Earning</p>
-                            <p class="value">₵ <span id="profileTodayEarning">0.00</span></p>
-                        </div>
-                    </div>
-
-                    <div class="profile-stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-bolt"></i>
-                        </div>
-                        <div class="stat-detail">
-                            <p class="label">Recharge Amount</p>
-                            <p class="value">₵ <span id="profileRechargeAmount">0.00</span></p>
+                            <p class="label">Total Outflow</p>
+                            <p class="value">₵ <span id="profileTotalOutflow">0.00</span></p>
                         </div>
                     </div>
                 </div>
@@ -289,21 +259,191 @@
                 <span>Home</span>
             </button>
             <button class="nav-item" data-tab="quantify-tab" onclick="switchTab('quantify-tab', this)">
-                <i class="fas fa-tasks"></i>
-                <span>Tasks</span>
+                <i class="fas fa-store"></i>
+                <span>Market</span>
             </button>
             <button class="nav-item" data-tab="invite-tab" onclick="switchTab('invite-tab', this)">
-                <i class="fas fa-share-nodes"></i>
-                <span>Invite</span>
+                <i class="fas fa-headset"></i>
+                <span>Support</span>
             </button>
             <button class="nav-item" data-tab="me-tab" onclick="switchTab('me-tab', this)">
                 <i class="fas fa-user"></i>
                 <span>Me</span>
             </button>
         </nav>
+
+        <!-- Investment Detail Modal -->
+        <div id="investmentDetailModal" class="investment-modal">
+            <div class="investment-modal-overlay" onclick="closeInvestmentModal()"></div>
+            <div class="investment-modal-content">
+                <div class="investment-modal-header">
+                    <button class="investment-modal-close" onclick="closeInvestmentModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="investment-details">
+                    <div class="investment-summary">
+                        <div class="investment-asset-info">
+                            <div class="investment-asset-image">
+                                <span id="investmentAssetEmoji"></span>
+                            </div>
+                            <div class="investment-asset-details">
+                                <h2 id="investmentAssetName"></h2>
+                                <p id="investmentAssetLocation" class="investment-location">
+                                    <i class="fas fa-map-marker-alt"></i> <span></span>
+                                </p>
+                                <div class="investment-roi-display">
+                                    <p class="roi-label">Expected ROI</p>
+                                    <p class="roi-value" id="investmentROI"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="investment-period-box">
+                            <p class="period-label">Investment Period</p>
+                            <p class="period-value" id="investmentPeriod"></p>
+                        </div>
+                    </div>
+
+                    <div class="investment-form-section">
+                        <div class="form-group">
+                            <label>Available Balance</label>
+                            <div class="balance-display" id="investmentAvailableBalance">GH₵ 0.00</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="investmentAmountInput">Investment Amount</label>
+                            <div class="investment-amount-input">
+                                <span class="currency">GH₵</span>
+                                <input 
+                                    type="number" 
+                                    id="investmentAmountInput" 
+                                    placeholder="200"
+                                    min="0"
+                                    step="1"
+                                    onchange="calculateInvestmentReturns()"
+                                    oninput="calculateInvestmentReturns()"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="investment-breakdown">
+                            <div class="breakdown-row">
+                                <span class="breakdown-label">Principal Capital</span>
+                                <span class="breakdown-value" id="principalCapital">GH₵ 0.00</span>
+                            </div>
+                            <div class="breakdown-row">
+                                <span class="breakdown-label">Expected Profit (<span id="roiPercentage">1200</span>)</span>
+                                <span class="breakdown-value profit" id="expectedProfit">+ GH₵ 0.00</span>
+                            </div>
+                            <div class="breakdown-row total">
+                                <span class="breakdown-label">Total Return</span>
+                                <span class="breakdown-value total-amount" id="totalReturn">GH₵ 0.00</span>
+                            </div>
+                        </div>
+
+                        <button class="invest-submit-btn" onclick="submitInvestment()">
+                            <span>Invest in this Pool</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade Initiation Modal -->
+        <div id="tradeInitialModal" class="modal-overlay">
+            <div class="modal-card">
+                <button class="modal-close" onclick="closeTradeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-header">
+                    <h2>Confirm Trade</h2>
+                </div>
+                <div class="modal-body">
+                    <div class="trade-details">
+                        <div class="trade-image-section">
+                            <img id="tradeImage" src="" alt="Market" class="trade-image">
+                        </div>
+                        <div class="trade-info-section">
+                            <h3 id="tradeName">Market Name</h3>
+                            <p id="tradeSymbol" class="trade-symbol">SYMBOL</p>
+                        </div>
+                    </div>
+
+                    <div class="trade-amounts">
+                        <div class="amount-row">
+                            <span class="amount-label">Investment Amount</span>
+                            <span class="amount-value" id="investAmount">GH₵ 0.00</span>
+                        </div>
+                        <div class="amount-row">
+                            <span class="amount-label">Cashout in Period</span>
+                            <span class="amount-value" id="cashoutPeriod">GH₵ 0.00</span>
+                        </div>
+                        <div class="amount-row highlight">
+                            <span class="amount-label">Expected Return</span>
+                            <span class="amount-value profit" id="returnValue">GH₵ 0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="trade-period">
+                        <span class="period-label">Period</span>
+                        <span class="period-value" id="tradePeriod">24 Hours</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-cancel" onclick="closeTradeModal()">Cancel</button>
+                    <button class="btn btn-confirm" onclick="confirmTrade()">Confirm Trade</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade Success Modal with Countdown -->
+        <div id="tradeSuccessModal" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header success">
+                    <i class="fas fa-check-circle"></i>
+                    <h2>Trade Initiated Successfully!</h2>
+                </div>
+                <div class="modal-body">
+                    <div class="success-message">
+                        <p>Your trade has been initiated. Your account will be credited after the period completes.</p>
+                    </div>
+
+                    <div class="countdown-section">
+                        <p class="countdown-label">Your return will be credited in:</p>
+                        <div class="countdown-timer">
+                            <span id="countdownDays" class="countdown-value">00</span>
+                            <span class="countdown-unit">Days</span>
+                            <span id="countdownHours" class="countdown-value">00</span>
+                            <span class="countdown-unit">Hours</span>
+                            <span id="countdownMinutes" class="countdown-value">00</span>
+                            <span class="countdown-unit">Minutes</span>
+                            <span id="countdownSeconds" class="countdown-value">00</span>
+                            <span class="countdown-unit">Seconds</span>
+                        </div>
+                    </div>
+
+                    <div class="success-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Investment Amount</span>
+                            <span class="detail-value" id="successInvestAmount">GH₵ 0.00</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Expected Return</span>
+                            <span class="detail-value profit" id="successReturnAmount">GH₵ 0.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success-close" onclick="closeSuccessModal()">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="js/auth.js"></script>
     <script src="js/dashboard.js"></script>
+    <script src="js/crypto-status.js"></script>
 </body>
 </html>

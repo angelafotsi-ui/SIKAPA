@@ -37,7 +37,7 @@ body {
 
 .checkout-header h1 {
   font-size: 2.8rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #37017a, #37017a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -132,7 +132,7 @@ body {
 }
 
 .summary-total span:last-child {
-  color: #667eea;
+  color: #37017a;
 }
 
 /* Checkout Form */
@@ -199,9 +199,9 @@ body {
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #37017a;
   background: white;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 0 0 4px rgba(55, 1, 122, 0.15);
   transform: translateY(-2px);
 }
 
@@ -229,14 +229,14 @@ body {
 }
 
 .payment-option:hover {
-  border-color: #667eea;
+  border-color: #37017a;
   background: white;
 }
 
 .payment-option.active {
-  border-color: #667eea;
-  background: rgba(102, 126, 234, 0.05);
-  color: #667eea;
+  border-color: #37017a;
+  background: rgba(55, 1, 122, 0.05);
+  color: #37017a;
 }
 
 /* Stripe Elements */
@@ -248,9 +248,9 @@ body {
 }
 
 .StripeElement--focus {
-  border-color: #667eea;
+  border-color: #37017a;
   background: white;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 0 0 4px rgba(55, 1, 122, 0.15);
 }
 
 /* Buttons */
@@ -273,14 +273,14 @@ body {
 }
 
 .btn-checkout {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #37017a, #37017a);
   color: white;
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 30px rgba(55, 1, 122, 0.3);
 }
 
 .btn-checkout:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 15px 40px rgba(55, 1, 122, 0.4);
 }
 
 .btn-checkout:disabled {
@@ -290,12 +290,12 @@ body {
 
 .btn-cancel {
   background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: #37017a;
+  border: 2px solid #37017a;
 }
 
 .btn-cancel:hover {
-  background: #667eea;
+  background: #37017a;
   color: white;
 }
 

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#37017a" />
+  <title>Sikapa Ghana | Professional Agribusiness</title>
+  <link rel="stylesheet" href="css/public-home.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/">
+        <span class="brand-dot"></span>
+        <span class="brand-name">Sikapa Ghana</span>
+      </a>
+
+      <nav class="nav" aria-label="Primary"></nav>
+
+      <div class="topbar-actions">
+        <a class="btn btn-ghost" href="login.html">Login</a>
+        <a class="btn btn-primary" href="signup.html">Get Started</a>
+        <button class="icon-btn" id="mobileMenuBtn" aria-label="Open menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav" hidden>
+      <div class="mobile-nav-actions">
+        <a class="btn btn-ghost" href="login.html">Login</a>
+        <a class="btn btn-primary" href="signup.html">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <div class="pill">Verified Ghanaian Agribusiness</div>
+          <h1>Earn strong returns on physical livestock assets.</h1>
+          <p class="subtext">
+            Join smart investors powering Ghana’s food security while growing wealth through insured livestock farming.
+          </p>
+
+          <div class="hero-cta">
+            <a class="btn btn-primary btn-lg" href="signup.html">Open Your Account</a>
+            <a class="btn btn-ghost btn-lg" href="#pools">Explore Farms</a>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat">
+              <div class="stat-k">Fast Support</div>
+              <div class="stat-v">Live Assistance</div>
+            </div>
+            <div class="stat">
+              <div class="stat-k">Mobile Optimized</div>
+              <div class="stat-v">Dashboard Ready</div>
+            </div>
+            <div class="stat">
+              <div class="stat-k">Secure</div>
+              <div class="stat-v">Verified Flows</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section backdrop-section" id="how" aria-label="Backdrop">
+      <div class="section-inner">
+        <div class="backdrop-banner" role="img" aria-label="Sikapa Ghana backdrop"></div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="pools">
+      <div class="section-inner">
+        <h2>Active Investment Pools</h2>
+        <p class="section-sub">Select a category to start earning.</p>
+
+        <div class="pools">
+          <a class="pool-card" href="signup.html">
+            <div class="pool-top">
+              <div class="pool-icon"><i class="fas fa-feather"></i></div>
+              <div>
+                <div class="pool-title">Poultry</div>
+                <div class="pool-sub">High-demand cycles</div>
+              </div>
+            </div>
+            <div class="pool-cta">Get Started <i class="fas fa-arrow-right"></i></div>
+          </a>
+
+          <a class="pool-card" href="signup.html">
+            <div class="pool-top">
+              <div class="pool-icon"><i class="fas fa-cow"></i></div>
+              <div>
+                <div class="pool-title">Cattle</div>
+                <div class="pool-sub">Long-term value</div>
+              </div>
+            </div>
+            <div class="pool-cta">Explore <i class="fas fa-arrow-right"></i></div>
+          </a>
+
+          <a class="pool-card" href="signup.html">
+            <div class="pool-top">
+              <div class="pool-icon"><i class="fas fa-fish"></i></div>
+              <div>
+                <div class="pool-title">Fish Farming</div>
+                <div class="pool-sub">Tilapia &amp; Catfish</div>
+              </div>
+            </div>
+            <div class="pool-cta">Explore <i class="fas fa-arrow-right"></i></div>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <div class="footer-brand">Sikapa Ghana</div>
+        <div class="footer-muted">Professional Agribusiness</div>
+      </div>
+      <div class="footer-right">
+        <span class="footer-muted">© Sikapa Ghana. All Rights Reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const btn = document.getElementById('mobileMenuBtn');
+    const nav = document.getElementById('mobileNav');
+    btn?.addEventListener('click', () => {
+      const isHidden = nav.hasAttribute('hidden');
+      if (isHidden) nav.removeAttribute('hidden');
+      else nav.setAttribute('hidden', '');
+    });
+    // No in-page links currently
+  </script>
+</body>
+</html>
+

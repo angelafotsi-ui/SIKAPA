@@ -1,0 +1,44 @@
+[
+  {
+    "id": "msg_1778157070562_76",
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "userName": "Manuel Marcoli",
+    "userEmail": "fotsiemmanuel397@gmail.com",
+    "senderType": "user",
+    "text": "hi",
+    "createdAt": "2026-05-07T12:31:10.562Z",
+    "readByAdmin": true
+  },
+  {
+    "id": "msg_1778158452489_1187",
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "userName": "Manuel Marcoli",
+    "userEmail": "fotsiemmanuel397@gmail.com",
+    "senderType": "admin",
+    "senderName": "fotsiemmanuel397@gmail.com",
+    "text": "Hello Mr Manuel",
+    "createdAt": "2026-05-07T12:54:12.489Z",
+    "readByAdmin": true
+  },
+  {
+    "id": "msg_1778159034753_6056",
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "userName": "Manuel Marcoli",
+    "userEmail": "fotsiemmanuel397@gmail.com",
+    "senderType": "user",
+    "text": "i want bundle",
+    "createdAt": "2026-05-07T13:03:54.753Z",
+    "readByAdmin": true
+  },
+  {
+    "id": "msg_1778159062265_2011",
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "userName": "Manuel Marcoli",
+    "userEmail": "fotsiemmanuel397@gmail.com",
+    "senderType": "admin",
+    "senderName": "fotsiemmanuel397@gmail.com",
+    "text": "gdewfwjerfwjhfwwrg",
+    "createdAt": "2026-05-07T13:04:22.265Z",
+    "readByAdmin": true
+  }
+]

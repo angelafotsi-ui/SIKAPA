@@ -26,7 +26,7 @@ const emailTemplates = {
                     <div style="max-width: 600px; margin: 0 auto;">
                         
                         <!-- Header Background -->
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; border-radius: 12px 12px 0 0; text-align: center;">
+                        <div style="background: linear-gradient(135deg, #37017a 0%, #37017a 100%); padding: 40px 20px; border-radius: 12px 12px 0 0; text-align: center;">
                             <div style="font-size: 48px; margin-bottom: 15px;">🎉</div>
                             <h1 style="color: white; margin: 0; font-size: 36px; font-weight: 700;">Welcome to SIKAPA!</h1>
                             <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Let's get you started on your journey</p>
@@ -47,7 +47,7 @@ const emailTemplates = {
                             </p>
 
                             <!-- Account Details Card -->
-                            <div style="background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fb 100%); border-left: 4px solid #667eea; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                            <div style="background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fb 100%); border-left: 4px solid #37017a; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                                 <h3 style="color: #333; margin: 0 0 15px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Your Account</h3>
                                 <div style="margin-bottom: 10px;">
                                     <p style="color: #999; font-size: 12px; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 0.5px;">Email Address</p>
@@ -64,7 +64,7 @@ const emailTemplates = {
                                 <h3 style="color: #333; margin: 0 0 20px 0; font-size: 16px; font-weight: 700;">🚀 Quick Start Guide</h3>
                                 
                                 <!-- Feature Cards -->
-                                <div style="margin-bottom: 15px; background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+                                <div style="margin-bottom: 15px; background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #37017a;">
                                     <div style="display: flex; gap: 15px;">
                                         <div style="font-size: 28px; min-width: 40px;">📊</div>
                                         <div>
@@ -74,7 +74,7 @@ const emailTemplates = {
                                     </div>
                                 </div>
 
-                                <div style="margin-bottom: 15px; background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #764ba2;">
+                                <div style="margin-bottom: 15px; background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #37017a;">
                                     <div style="display: flex; gap: 15px;">
                                         <div style="font-size: 28px; min-width: 40px;">💰</div>
                                         <div>
@@ -84,7 +84,7 @@ const emailTemplates = {
                                     </div>
                                 </div>
 
-                                <div style="margin-bottom: 15px; background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+                                <div style="margin-bottom: 15px; background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #37017a;">
                                     <div style="display: flex; gap: 15px;">
                                         <div style="font-size: 28px; min-width: 40px;">👥</div>
                                         <div>
@@ -94,7 +94,7 @@ const emailTemplates = {
                                     </div>
                                 </div>
 
-                                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #764ba2;">
+                                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #37017a;">
                                     <div style="display: flex; gap: 15px;">
                                         <div style="font-size: 28px; min-width: 40px;">🏆</div>
                                         <div>
@@ -107,7 +107,7 @@ const emailTemplates = {
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin: 30px 0;">
-                                <a href="http://localhost:3000/dashboard.html" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 15px; display: inline-block; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); transition: transform 0.2s;">Go to Dashboard</a>
+                                <a href="http://localhost:3000/dashboard.html" style="background: linear-gradient(135deg, #37017a 0%, #37017a 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 15px; display: inline-block; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); transition: transform 0.2s;">Go to Dashboard</a>
                             </div>
 
                             <!-- Support Section -->
@@ -118,7 +118,7 @@ const emailTemplates = {
 
                             <!-- Footer -->
                             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
-                                <p style="color: #999; font-size: 12px; margin: 0;">Best regards,<br><strong style="color: #667eea;">The SIKAPA Team</strong></p>
+                                <p style="color: #999; font-size: 12px; margin: 0;">Best regards,<br><strong style="color: #37017a;">The SIKAPA Team</strong></p>
                             </div>
                         </div>
 
@@ -155,11 +155,11 @@ const emailTemplates = {
                     .reset-btn { background: linear-gradient(135deg, #ee7752, #e73c7e); color: white; padding: 14px 40px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 25px 0; font-weight: 600; box-shadow: 0 4px 12px rgba(233, 115, 126, 0.3); transition: transform 0.2s; }
                     .reset-btn:hover { transform: translateY(-2px); }
                     .info-section { background: #f0f0f0; padding: 15px; border-radius: 6px; margin: 20px 0; }
-                    .info-section h3 { color: #667eea; margin-top: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+                    .info-section h3 { color: #37017a; margin-top: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
                     .info-section p { margin: 8px 0; font-size: 14px; color: #555; }
                     .footer { border-top: 1px solid #eee; margin-top: 30px; padding-top: 20px; text-align: center; }
                     .footer p { color: #999; font-size: 12px; margin: 5px 0; }
-                    .footer-brand { color: #667eea; font-weight: 600; }
+                    .footer-brand { color: #37017a; font-weight: 600; }
                 </style>
             </head>
             <body>
@@ -223,20 +223,20 @@ const emailTemplates = {
                     .header-icon { font-size: 45px; margin-bottom: 10px; }
                     .checkmark { display: inline-block; width: 50px; height: 50px; background: rgba(255,255,255,0.3); border-radius: 50%; text-align: center; line-height: 50px; }
                     .content { padding: 30px; }
-                    .transaction-box { background: linear-gradient(135deg, #f5f9ff, #f0f5ff); border-left: 4px solid #667eea; padding: 20px; border-radius: 6px; margin: 25px 0; }
+                    .transaction-box { background: linear-gradient(135deg, #f5f9ff, #f0f5ff); border-left: 4px solid #37017a; padding: 20px; border-radius: 6px; margin: 25px 0; }
                     .transaction-row { display: flex; justify-content: space-between; margin: 12px 0; font-size: 15px; }
                     .transaction-row strong { color: #333; }
                     .transaction-row span { color: #00b894; font-weight: 600; }
                     .transaction-row.label { color: #999; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
                     .receipt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; }
-                    .receipt-item { background: #f9f9f9; padding: 15px; border-radius: 6px; border-left: 3px solid #667eea; }
+                    .receipt-item { background: #f9f9f9; padding: 15px; border-radius: 6px; border-left: 3px solid #37017a; }
                     .receipt-item-label { color: #999; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
                     .receipt-item-value { color: #333; font-size: 16px; font-weight: 600; }
                     .amount-highlight { font-size: 32px; color: #00b894; font-weight: 700; margin: 20px 0; text-align: center; }
-                    .section-title { color: #667eea; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 25px; margin-bottom: 12px; }
-                    .cta-btn { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 14px 40px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px auto; font-weight: 600; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
+                    .section-title { color: #37017a; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 25px; margin-bottom: 12px; }
+                    .cta-btn { background: linear-gradient(135deg, #37017a, #37017a); color: white; padding: 14px 40px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px auto; font-weight: 600; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
                     .cta-btn:hover { transform: translateY(-2px); }
-                    .support-box { background: #f0f7ff; border-left: 4px solid #667eea; padding: 15px; border-radius: 4px; margin-top: 20px; }
+                    .support-box { background: #f0f7ff; border-left: 4px solid #37017a; padding: 15px; border-radius: 4px; margin-top: 20px; }
                     .support-box p { margin: 5px 0; color: #555; font-size: 13px; }
                     .footer { border-top: 1px solid #eee; margin-top: 30px; padding-top: 20px; text-align: center; }
                     .footer p { color: #999; font-size: 11px; margin: 5px 0; }

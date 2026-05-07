@@ -91,12 +91,12 @@
   },
   {
     "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
-    "balance": 289,
+    "balance": 319,
     "currency": "GHS",
-    "withdrawable": 60.5,
+    "withdrawable": 181,
     "createdAt": "2026-02-23T15:26:20.693Z",
-    "lastUpdated": "2026-03-05T18:09:05.100Z",
-    "deposited": 350,
+    "lastUpdated": "2026-05-01T13:57:00.605Z",
+    "deposited": 380,
     "tierCost": 0
   },
   {
@@ -107,5 +107,14 @@
     "lastUpdated": "2026-03-05T17:44:33.488Z",
     "deposited": 1,
     "withdrawable": 0.5
+  },
+  {
+    "userId": "aP7GR5nWLaZP415nP6fdcDfILKH3",
+    "balance": 0,
+    "currency": "GHS",
+    "createdAt": "2026-03-13T18:28:17.273Z",
+    "lastUpdated": "2026-03-13T18:28:17.273Z",
+    "deposited": 0,
+    "withdrawable": 0
   }
 ]

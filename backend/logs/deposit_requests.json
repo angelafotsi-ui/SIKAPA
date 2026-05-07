@@ -129,5 +129,21 @@
     "transactionId": "31482d46abc94e428d843621c8e900a6",
     "createdAt": "2026-03-05T18:19:48.328Z",
     "updatedAt": "2026-03-05T18:19:48.328Z"
+  },
+  {
+    "id": "deposit_aU1rCqPO3SclZfIqbQMOKr7h2H02_1773427746187",
+    "userId": "aU1rCqPO3SclZfIqbQMOKr7h2H02",
+    "senderName": "ANSON JEFF",
+    "senderNumber": "0545327880",
+    "amount": 30,
+    "momoNumber": "713*4624#",
+    "momoName": "SIKAPA GHANA LIMITED",
+    "screenshotPath": "aU1rCqPO3SclZfIqbQMOKr7h2H02_1773427746185_64971090-5933-11ee-83bb-5f9bffc8f569.jpg",
+    "screenshotSize": 51573,
+    "status": "approved",
+    "createdAt": "2026-03-13T18:49:06.187Z",
+    "approvedAt": "2026-03-13T18:49:29.415Z",
+    "approvedBy": "admin@sikapa.com",
+    "rejectionReason": null
   }
 ]

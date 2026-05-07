@@ -3,6 +3,16 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
+function readJsonSafe(filePath, fallback) {
+    try {
+        if (!fs.existsSync(filePath)) return fallback;
+        const raw = fs.readFileSync(filePath, 'utf8');
+        return JSON.parse(raw || JSON.stringify(fallback));
+    } catch (e) {
+        return fallback;
+    }
+}
+
 // Withdraw request endpoint
 router.post('/request', (req, res) => {
     try {
@@ -25,12 +35,40 @@ router.post('/request', (req, res) => {
             });
         }
 
+        // Minimum withdrawal amount
+        const MIN_WITHDRAWAL = 50;
+        if (amountNum < MIN_WITHDRAWAL) {
+            return res.status(400).json({
+                success: false,
+                message: `Minimum withdrawal amount is ₵${MIN_WITHDRAWAL}`
+            });
+        }
+
         // Valid networks
         const validNetworks = ['mtn', 'vodafone', 'airtel', 'bank', 'other'];
         if (!validNetworks.includes(walletNetwork)) {
             return res.status(400).json({
                 success: false,
                 message: 'Invalid wallet network'
+            });
+        }
+
+        // Ensure user has enough account funds (balance)
+        const balanceFile = path.join(__dirname, '../logs/user_balances.json');
+        const balances = readJsonSafe(balanceFile, []);
+        let userBalanceRecord = null;
+
+        if (Array.isArray(balances)) {
+            userBalanceRecord = balances.find(b => b.userId === userId);
+        } else if (balances && typeof balances === 'object') {
+            userBalanceRecord = balances[userId];
+        }
+
+        const currentBalance = parseFloat(userBalanceRecord?.balance || 0);
+        if (amountNum > currentBalance) {
+            return res.status(400).json({
+                success: false,
+                message: `Insufficient funds. Available balance is ₵${currentBalance.toFixed(2)}`
             });
         }
 

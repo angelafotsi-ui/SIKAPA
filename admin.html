@@ -65,7 +65,7 @@
 
         .sidebar {
             width: 250px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #37017a 0%, #37017a 100%);
             color: white;
             padding: 20px;
             position: fixed;
@@ -226,7 +226,7 @@
 
         .stat-card .number {
             font-size: 32px;
-            color: #667eea;
+            color: #37017a;
             font-weight: bold;
         }
 
@@ -354,7 +354,7 @@
         }
 
         .btn-small {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #37017a 0%, #37017a 100%);
             color: white;
             padding: 6px 12px;
             font-size: 11px;
@@ -548,6 +548,7 @@
                 <li><button class="menu-btn" data-section="withdrawals">Withdrawals</button></li>
                 <li><button class="menu-btn" data-section="cashouts">Cashouts</button></li>
                 <li><button class="menu-btn" data-section="users">Users</button></li>
+                <li><button class="menu-btn" data-section="messages">Messages</button></li>
                 <li><button class="menu-btn" data-section="transactions">Transactions</button></li>
             </ul>
         </div>
@@ -682,6 +683,30 @@
                 </div>
             </div>
 
+            <!-- Messages Section -->
+            <div id="messages" class="section">
+                <div class="requests-table" style="padding: 16px;">
+                    <div style="display: grid; grid-template-columns: 320px 1fr; gap: 16px;">
+                        <div style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                            <div class="table-header"><h2>Users</h2></div>
+                            <div id="admin-conversations-list" style="max-height: 70vh; overflow-y: auto; padding: 8px;">
+                                <div class="loading">Loading conversations...</div>
+                            </div>
+                        </div>
+                        <div style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                            <div class="table-header"><h2 id="admin-chat-title">Select a conversation</h2></div>
+                            <div id="admin-chat-messages" style="max-height: 58vh; overflow-y: auto; padding: 14px; background: #fafafa;">
+                                <div class="empty-state"><p>No conversation selected</p></div>
+                            </div>
+                            <div style="display: flex; gap: 8px; padding: 12px; border-top: 1px solid #e0e0e0;">
+                                <input id="admin-reply-input" type="text" placeholder="Type your reply..." style="flex:1; padding: 10px; border: 1px solid #d0d0d0; border-radius: 6px;">
+                                <button class="btn btn-approve" onclick="sendAdminReply()">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Transactions Section -->
             <div id="transactions" class="section">
                 <div class="requests-table">
@@ -708,6 +733,8 @@
     </div>
 
     <script>
+        let selectedSupportUserId = null;
+
         // Check admin access
         document.addEventListener('DOMContentLoaded', function() {
             // For now, allow access (in production, add proper admin authentication)
@@ -738,6 +765,12 @@
 
             document.getElementById('deposit-filter').addEventListener('change', function() {
                 loadDeposits(this.value);
+            });
+
+            document.getElementById('admin-reply-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendAdminReply();
+                }
             });
         }
 
@@ -782,6 +815,7 @@
                 withdrawals: 'Withdrawal Requests',
                 cashouts: 'Cashout Requests',
                 users: 'Users',
+                messages: 'Support Messages',
                 transactions: 'Transactions'
             };
             document.getElementById('section-title').textContent = titles[section];
@@ -797,6 +831,7 @@
             else if (section === 'withdrawals') loadWithdrawals();
             else if (section === 'cashouts') loadCashouts();
             else if (section === 'users') loadUsers();
+            else if (section === 'messages') loadSupportConversations();
             else if (section === 'transactions') loadTransactions();
 
             // Close sidebar on mobile after selecting a section
@@ -1202,7 +1237,7 @@
                             color: #1a1a1a;
                         }
                         .user-detail-value.currency {
-                            color: #667eea;
+                            color: #37017a;
                         }
                         .user-detail-code {
                             font-family: monospace;
@@ -1457,7 +1492,7 @@
                             onclick="submitFundManagement('${userId}', '${userEmail}')"
                             style="
                                 padding: 0.8rem 1.5rem;
-                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                background: linear-gradient(135deg, #37017a 0%, #37017a 100%);
                                 color: white;
                                 border: none;
                                 border-radius: 5px;
@@ -1491,7 +1526,7 @@
                 return;
             }
 
-            statusDiv.innerHTML = '<div style="color: #667eea;">Processing...</div>';
+            statusDiv.innerHTML = '<div style="color: #37017a;">Processing...</div>';
 
             try {
                 // Construct proper API URL with hostname detection
@@ -1729,6 +1764,95 @@
             } catch (error) {
                 console.error('Error deleting user:', error);
                 alert(`Error: ${error.message}`);
+            }
+        }
+
+        async function loadSupportConversations() {
+            try {
+                const response = await fetch(`${getApiBase()}/support/admin/conversations`);
+                const data = await response.json();
+                const conversations = data.conversations || [];
+                const container = document.getElementById('admin-conversations-list');
+
+                if (!conversations.length) {
+                    container.innerHTML = '<div class="empty-state"><p>No support messages yet</p></div>';
+                    return;
+                }
+
+                container.innerHTML = conversations.map(conv => `
+                    <div onclick="openSupportConversation('${conv.userId}', '${(conv.userName || 'User').replace(/'/g, "\\'")}')" style="padding:10px; border-bottom:1px solid #eee; cursor:pointer; background:${selectedSupportUserId === conv.userId ? '#f3ecff' : '#fff'};">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong>${conv.userName || 'User'}</strong>
+                            ${conv.unreadCount > 0 ? `<span style="background:#e74c3c;color:#fff;border-radius:12px;padding:2px 8px;font-size:11px;">${conv.unreadCount}</span>` : ''}
+                        </div>
+                        <div style="font-size:12px; color:#666;">${conv.userEmail || ''}</div>
+                        <div style="font-size:12px; color:#777; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${conv.lastMessage || ''}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading support conversations:', error);
+            }
+        }
+
+        async function openSupportConversation(userId, userName) {
+            selectedSupportUserId = userId;
+            document.getElementById('admin-chat-title').textContent = `Chat with ${userName}`;
+            await loadSupportConversations();
+
+            try {
+                const response = await fetch(`${getApiBase()}/support/admin/messages/${userId}`);
+                const data = await response.json();
+                const messages = data.messages || [];
+                const chatContainer = document.getElementById('admin-chat-messages');
+
+                chatContainer.innerHTML = messages.length ? messages.map(msg => `
+                    <div style="margin-bottom:10px; display:flex; justify-content:${msg.senderType === 'admin' ? 'flex-end' : 'flex-start'};">
+                        <div style="max-width:80%; padding:10px; border-radius:10px; background:${msg.senderType === 'admin' ? '#d9f6dd' : '#ffffff'}; border:1px solid #e0e0e0;">
+                            <div style="font-size:12px; color:#555; margin-bottom:4px;">${msg.senderType === 'admin' ? (msg.senderName || 'Admin') : (msg.userName || 'User')}</div>
+                            <div style="font-size:14px; color:#222;">${msg.text}</div>
+                            <div style="font-size:11px; color:#777; margin-top:4px;">${new Date(msg.createdAt).toLocaleString()}</div>
+                        </div>
+                    </div>
+                `).join('') : '<div class="empty-state"><p>No messages yet</p></div>';
+
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } catch (error) {
+                console.error('Error loading support conversation:', error);
+            }
+        }
+
+        async function sendAdminReply() {
+            try {
+                if (!selectedSupportUserId) {
+                    alert('Please select a conversation first.');
+                    return;
+                }
+
+                const input = document.getElementById('admin-reply-input');
+                const text = input.value.trim();
+                if (!text) return;
+
+                const response = await fetch(`${getApiBase()}/support/admin/reply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: selectedSupportUserId,
+                        text,
+                        adminName: localStorage.getItem('userEmail') || 'System Agent'
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    alert(data.message || 'Failed to send reply');
+                    return;
+                }
+
+                input.value = '';
+                await openSupportConversation(selectedSupportUserId, 'User');
+            } catch (error) {
+                console.error('Error sending admin reply:', error);
+                alert('Failed to send reply');
             }
         }
 

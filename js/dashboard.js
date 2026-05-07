@@ -14,10 +14,21 @@ document.addEventListener('DOMContentLoaded', function() {
     loadUserProfile();
     loadUserStats();
     loadTransactions();
-    loadReferralStats();
+    loadActivities();
+    loadSupportMessages();
+    resumeActiveTrades();
     setInterval(loadUserStats, 10000);
     setInterval(loadTransactions, 30000);
-    setInterval(loadReferralStats, 30000);
+    setInterval(loadSupportMessages, 7000);
+
+    const supportInput = document.getElementById('supportInput');
+    if (supportInput) {
+        supportInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendSupportMessage();
+            }
+        });
+    }
 });
 
 /**
@@ -40,9 +51,11 @@ function switchTab(tabId, element) {
     // Add active to nav item
     element.classList.add('active');
     
-    // Load tier data when switching to quantify tab
+    // Load market data when switching to quantify tab
     if (tabId === 'quantify-tab') {
-        loadTiers();
+        loadMarkets();
+    } else if (tabId === 'invite-tab') {
+        loadSupportMessages();
     }
 }
 
@@ -76,12 +89,10 @@ async function loadUserProfile() {
             day: 'numeric'
         });
 
-        // Generate referral code and link
-        const referralCode = `SKP${userId.substring(0, 8).toUpperCase()}`;
-        document.getElementById('referralCode').textContent = referralCode;
-        
-        const referralLink = `${window.location.origin}?ref=${referralCode}`;
-        document.getElementById('referralLink').value = referralLink;
+        const welcome = document.getElementById('supportWelcomeMessage');
+        if (welcome) {
+            welcome.textContent = `Hello ${userName || 'User'}! 👋 Welcome to Sikapa Ghana support. Leave us a message below and our team will assist you shortly.`;
+        }
 
         // Show admin button if user is admin
         showAdminButtonIfAdmin();
@@ -101,7 +112,7 @@ async function loadUserStats() {
 
         if (!userId) return;
 
-        // Fetch user stats (commission today, today's earning, recharge amount, total revenue)
+        // Fetch user stats
         const statsResponse = await fetch(`${apiBase}/user/stats/${userId}`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`,
@@ -115,40 +126,164 @@ async function loadUserStats() {
             // Update all stat fields
             const stats = statsData.stats || {};
             
-            // Display total balance (account balance + withdrawable tier rewards)
-            document.getElementById('homeBalance').textContent = (stats.totalBalance || 0).toFixed(2);
-            document.getElementById('profileTotalRevenue').textContent = (stats.totalBalance || 0).toFixed(2);
+            // Display spendable balance after deducting pending market principal
+            const backendTotalBalance = stats.totalBalance || 0;
+            const pendingMarketPrincipal = getPendingMarketPrincipal();
+            const effectiveAvailableBalance = Math.max(0, backendTotalBalance - pendingMarketPrincipal);
+
+            document.getElementById('homeBalance').textContent = effectiveAvailableBalance.toFixed(2);
+            
+            // Store effective spendable balance for market checks and cards
+            localStorage.setItem('userBalance', effectiveAvailableBalance.toFixed(2));
+            localStorage.setItem('backendTotalBalance', backendTotalBalance.toFixed(2));
+
+            // Fetch financial totals from dedicated endpoint
+            const financialSummary = await loadFinancialSummary(userId, authToken);
+            const totalInflow = financialSummary.totalInflow || 0;
+            const totalOutflow = financialSummary.totalOutflow || 0;
+
+            document.getElementById('totalInflow').textContent = totalInflow.toFixed(2);
+            document.getElementById('totalOutflow').textContent = totalOutflow.toFixed(2);
+            document.getElementById('profileTotalInflow').textContent = totalInflow.toFixed(2);
+            document.getElementById('profileTotalOutflow').textContent = totalOutflow.toFixed(2);
             
             // Display withdrawable amount (tier rewards only)
             if (document.getElementById('withdrawableAmount')) {
                 document.getElementById('withdrawableAmount').textContent = (stats.withdrawableAmount || 0).toFixed(2);
             }
-            
-            // Display transaction statistics
-            document.getElementById('totalRevenue').textContent = (stats.totalRevenue || 0).toFixed(2);
-            document.getElementById('commissionToday').textContent = (stats.commissionToday || 0).toFixed(2);
-            document.getElementById('todayEarning').textContent = (stats.todayEarning || 0).toFixed(2);
-            document.getElementById('rechargeAmount').textContent = (stats.rechargeAmount || 0).toFixed(2);
 
-            // Update tier reward stats
+            // Update tier reward stats if they exist
             if (document.getElementById('tierClaimedToday')) {
                 document.getElementById('tierClaimedToday').textContent = stats.tierClaimedToday || 0;
             }
             if (document.getElementById('tierEarnings')) {
                 document.getElementById('tierEarnings').textContent = (stats.totalTierEarnings || 0).toFixed(2);
             }
-
-            // Update profile tab stats
-            document.getElementById('profileTotalRevenue').textContent = (stats.totalBalance || 0).toFixed(2);
-            document.getElementById('profileCommissionToday').textContent = (stats.commissionToday || 0).toFixed(2);
-            document.getElementById('profileTodayEarning').textContent = (stats.todayEarning || 0).toFixed(2);
-            document.getElementById('profileRechargeAmount').textContent = (stats.rechargeAmount || 0).toFixed(2);
-
-            // Note: friendsInvited and referralCommission are now handled by loadReferralStats()
         }
 
     } catch (error) {
         console.error('Error loading user stats:', error);
+    }
+}
+
+/**
+ * Load support chat messages for current user
+ */
+async function loadSupportMessages() {
+    try {
+        const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+        if (!userId) return;
+
+        const response = await fetch(`${apiBase}/support/messages/${userId}`);
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const messages = data.messages || [];
+        const supportMessagesEl = document.getElementById('supportMessages');
+        if (!supportMessagesEl) return;
+
+        const userName = localStorage.getItem('user_name') || 'User';
+        const introCard = `
+            <div class="support-message support-message-admin">
+                <div class="support-bubble">
+                    <h4>System Agent</h4>
+                    <p>Hello ${userName}! 👋 Welcome to Sikapa Ghana support. Leave us a message below and our team will assist you shortly.</p>
+                </div>
+            </div>
+        `;
+
+        const messageCards = messages.map(msg => {
+            const time = new Date(msg.createdAt).toLocaleString('en-US', {
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            const sender = msg.senderType === 'admin' ? 'System Agent' : 'You';
+            const rowClass = msg.senderType === 'admin' ? 'support-message-admin' : 'support-message-user';
+            return `
+                <div class="support-message ${rowClass}">
+                    <div class="support-bubble">
+                        <h4>${sender}</h4>
+                        <p>${msg.text}</p>
+                        <small>${time}</small>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        supportMessagesEl.innerHTML = introCard + (messageCards || '');
+        supportMessagesEl.scrollTop = supportMessagesEl.scrollHeight;
+    } catch (error) {
+        console.error('Error loading support messages:', error);
+    }
+}
+
+/**
+ * Send support message from user
+ */
+async function sendSupportMessage() {
+    try {
+        const input = document.getElementById('supportInput');
+        if (!input) return;
+
+        const text = input.value.trim();
+        if (!text) {
+            showNotification('Please enter a message', 'error');
+            return;
+        }
+
+        const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+        const userName = localStorage.getItem('user_name') || 'User';
+        const userEmail = localStorage.getItem('user_email') || '';
+        if (!userId) return;
+
+        const response = await fetch(`${apiBase}/support/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, userName, userEmail, text })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            showNotification(data.message || 'Failed to send message', 'error');
+            return;
+        }
+
+        input.value = '';
+        loadSupportMessages();
+    } catch (error) {
+        console.error('Error sending support message:', error);
+        showNotification('Failed to send message', 'error');
+    }
+}
+
+/**
+ * Load Total Inflow and Outflow
+ */
+async function loadFinancialSummary(userId, authToken) {
+    const localMarketOutflow = parseFloat(localStorage.getItem('totalOutflow') || '0');
+
+    try {
+        const summaryResponse = await fetch(
+            `${apiBase}/user/financial-summary/${userId}?marketOutflow=${encodeURIComponent(localMarketOutflow)}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (!summaryResponse.ok) {
+            throw new Error('Failed to load financial summary');
+        }
+
+        const summaryData = await summaryResponse.json();
+        return summaryData.summary || { totalInflow: 0, totalOutflow: localMarketOutflow };
+    } catch (error) {
+        console.error('Error loading financial summary:', error);
+        return { totalInflow: 0, totalOutflow: localMarketOutflow };
     }
 }
 
@@ -207,6 +342,130 @@ async function loadTransactions() {
     } catch (error) {
         console.error('Error loading transactions:', error);
     }
+}
+
+/**
+ * Load and Display Recent Activities (Ongoing Trades)
+ */
+async function loadActivities() {
+    try {
+        displayActivities();
+    } catch (error) {
+        console.error('Error loading activities:', error);
+    }
+}
+
+/**
+ * Display Recent Activities from localStorage
+ */
+function displayActivities() {
+    const activitiesList = document.getElementById('activitiesList');
+    if (!activitiesList) return;
+
+    migrateTradeActivitiesIfNeeded();
+    const trades = JSON.parse(localStorage.getItem('tradeActivities') || '[]');
+    const now = new Date().getTime();
+    
+    if (trades.length === 0) {
+        activitiesList.innerHTML = '<p class="no-data">No recent activities</p>';
+        return;
+    }
+    
+    activitiesList.innerHTML = trades.slice(0, 5).map((trade, index) => {
+        const isCompleted = trade.status === 'completed' || trade.completionTime <= now;
+        const status = isCompleted ? 'Completed' : 'Pending';
+        const statusClass = isCompleted ? 'completed' : 'pending';
+        
+        const returnAmount = trade.cashoutAmount - trade.tradeAmount;
+        const usdTradeAmount = convertToUSD(trade.tradeAmount);
+        const usdCashoutAmount = convertToUSD(trade.cashoutAmount);
+        
+        return `
+            <div class="activity-item">
+                <div class="activity-header">
+                    <div class="activity-info">
+                        <h4 class="activity-name">${trade.marketName}</h4>
+                        <p class="activity-date">${new Date(trade.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <span class="activity-status ${statusClass}">${status}</span>
+                </div>
+                
+                <div class="activity-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Investment</span>
+                        <span class="detail-value">GH₵${trade.tradeAmount.toFixed(2)} ($${usdTradeAmount})</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Expected Return</span>
+                        <span class="detail-value profit">+ GH₵${returnAmount.toFixed(2)} ($${convertToUSD(returnAmount)})</span>
+                    </div>
+                </div>
+                
+                ${!isCompleted ? `
+                    <div class="activity-countdown" id="countdown-${index}">
+                        <span class="countdown-label">Completes in:</span>
+                        <span class="countdown-display" id="countdown-text-${index}">calculating...</span>
+                    </div>
+                ` : `
+                    <div class="activity-completed">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Credited GH₵${trade.cashoutAmount.toFixed(2)}</span>
+                    </div>
+                `}
+            </div>
+        `;
+    }).join('');
+    
+    // Start countdown timers for active trades
+    trades.forEach((trade, index) => {
+        if (trade.completionTime > now) {
+            updateActivityCountdown(trade, index);
+        }
+    });
+}
+
+/**
+ * Update Activity Countdown Display
+ */
+function updateActivityCountdown(trade, index) {
+    const countdownDisplay = document.getElementById(`countdown-text-${index}`);
+    if (!countdownDisplay) return;
+    
+    const timerInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const timeRemaining = trade.completionTime - now;
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            countdownDisplay.textContent = 'Completed!';
+            countdownDisplay.classList.add('completed');
+            
+            // Refresh activities after a short delay
+            setTimeout(() => {
+                displayActivities();
+                loadUserStats();
+            }, 1000);
+            return;
+        }
+        
+        // Calculate time units
+        const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+        
+        // Format display
+        let displayText = '';
+        if (days > 0) {
+            displayText = `${days}d ${hours}h ${minutes}m`;
+        } else if (hours > 0) {
+            displayText = `${hours}h ${minutes}m ${seconds}s`;
+        } else {
+            displayText = `${minutes}m ${seconds}s`;
+        }
+        
+        countdownDisplay.textContent = displayText;
+    }, 1000);
 }
 
 /**
@@ -340,7 +599,7 @@ function getTransactionColor(type) {
     const colors = {
         'deposit': '#4CAF5033',
         'withdraw': '#FF6B6B33',
-        'commission': '#667eea33',
+        'commission': '#37017a33',
         'payment': '#f5576c33'
     };
     return colors[type] || '#99999933';
@@ -512,199 +771,605 @@ async function updateUserPassword(newPassword) {
 }
 
 /**
- * Load Tiers Data
+/**
+ * Exchange Rate Configuration
  */
-async function loadTiers() {
-    const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
-    
+const EXCHANGE_RATE = 10.5; // 1 USD = 10.5 GH₵ (adjust as needed)
+
+/**
+ * Market Data Configuration
+ */
+const MARKETS_DATA = {
+    crypto: [
+        {
+            id: 'btc',
+            name: 'Bitcoin',
+            symbol: 'BTC',
+            image: 'images/BITCOIN.png',
+            icon: '<i class="fab fa-bitcoin"></i>',
+            tradeAmount: 221.00, // in GH₵
+            cashoutAmount: 1800.00, // in GH₵
+            period: '24Hours'
+        },
+        {
+            id: 'usdt',
+            name: 'USDT',
+            symbol: 'USDT',
+            image: 'images/USDT.png',
+            icon: '<i class="fas fa-coins"></i>',
+            tradeAmount: 250.00, // in GH₵
+            cashoutAmount: 2100.00, // in GH₵
+            period: '24Hours'
+        },
+        {
+            id: 'sol',
+            name: 'Solana',
+            symbol: 'SOL',
+            image: 'images/SOLANA.jpg',
+            icon: '<i class="fas fa-sun"></i>',
+            tradeAmount: 189.00, // in GH₵
+            cashoutAmount: 1500.00, // in GH₵
+            period: '24Hours'
+        }
+    ],
+    livestock: [
+        {
+            id: 'snail',
+            name: 'Snail',
+            symbol: 'Snail',
+            location: 'Gbetsile',
+            image: 'images/SNAIL.jpg',
+            icon: '<i class="fas fa-bug"></i>',
+            tradeAmount: 20.00, // in GH₵
+            cashoutAmount: 650.00, // in GH₵
+            period: '7Days'
+        },
+        {
+            id: 'fish',
+            name: 'Fish Farming',
+            symbol: 'Tilapia & Catfish',
+            location: 'Gbetsile',
+            image: 'images/FISH.jpg',
+            icon: '<i class="fas fa-fish"></i>',
+            tradeAmount: 150.00, // in GH₵
+            cashoutAmount: 1450.00, // in GH₵
+            period: '3Days'
+        },
+        {
+            id: 'pig',
+            name: 'Pig',
+            symbol: 'PIG',
+            location: 'Madina',
+            image: 'images/PIGS.jpg',
+            icon: '<i class="fas fa-pig"></i>',
+            tradeAmount: 100.00, // in GH₵
+            cashoutAmount: 1200.00, // in GH₵
+            period: '7Days'
+        },
+        {
+            id: 'cattle',
+            name: 'Cattle',
+            symbol: 'CATTLE',
+            location: 'WA',
+            image: 'images/CATTLE.jpg',
+            icon: '<i class="fas fa-cow"></i>',
+            tradeAmount: 300.00, // in GH₵
+            cashoutAmount: 2500.00, // in GH₵
+            period: '7Days'
+        },
+        {
+            id: 'poultry',
+            name: 'Poultry',
+            symbol: 'POULTRY',
+            location: 'Accra',
+            image: 'images/POULTRY.jpg',
+            icon: '<i class="fas fa-feather-alt"></i>',
+            tradeAmount: 70.00, // in GH₵
+            cashoutAmount: 900.00, // in GH₵
+            period: '7Days'
+        }
+    ]
+};
+
+/**
+ * Convert GH₵ to USD
+ */
+function convertToUSD(ghAmount) {
+    return (ghAmount / EXCHANGE_RATE).toFixed(2);
+}
+
+/**
+ * Format Currency Display
+ */
+function formatCurrencyDisplay(ghAmount) {
+    const usdAmount = convertToUSD(ghAmount);
+    return `GH₵${ghAmount.toFixed(2)} ($${usdAmount})`;
+}
+
+/**
+ * Load Markets Data
+ */
+async function loadMarkets() {
     try {
-        const response = await fetch(`${apiBase}/tiers/user/${userId}`);
-        if (!response.ok) throw new Error('Failed to fetch tiers');
-        
-        const tiers = await response.json();
-        displayTiers(tiers, userId);
+        displayCryptoMarkets();
+        displayLivestockMarkets();
+        updateMarketBalance();
+        loadCryptoStatus();
     } catch (error) {
-        console.error('Error loading tiers:', error);
-        document.getElementById('tiersList').innerHTML = `
-            <div class="error-state">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Failed to load tiers</p>
-            </div>
-        `;
+        console.error('Error loading markets:', error);
+        showNotification('Failed to load markets', 'error');
     }
 }
 
 /**
- * Display Tier Cards
+ * Update Market Balance Display
  */
-function displayTiers(tiers, userId) {
-    const tiersList = document.getElementById('tiersList');
+function updateMarketBalance() {
+    const balance = localStorage.getItem('userBalance') || '0.00';
+    document.getElementById('marketAvailableBalance').textContent = balance;
+}
+
+function getPendingMarketPrincipal() {
+    const now = Date.now();
+    const activeTrades = JSON.parse(localStorage.getItem('activeTrades') || '[]');
+
+    return activeTrades.reduce((sum, trade) => {
+        if (trade.completionTime > now) {
+            return sum + parseFloat(trade.tradeAmount || 0);
+        }
+        return sum;
+    }, 0);
+}
+
+/**
+ * Display Crypto Markets
+ */
+function displayCryptoMarkets() {
+    const cryptoContainer = document.getElementById('cryptoMarketCards');
     
-    if (!tiers || tiers.length === 0) {
-        tiersList.innerHTML = '<p>No tiers available</p>';
+    if (!cryptoContainer) return;
+    
+    cryptoContainer.innerHTML = MARKETS_DATA.crypto.map(market => `
+        <div class="market-card">
+            <div class="market-card-header">
+                <div class="market-card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 14px; overflow: hidden;">
+                    <img src="${market.image}" alt="${market.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="market-card-info">
+                    <h3>${market.name} Market</h3>
+                    <p>${market.symbol}</p>
+                </div>
+            </div>
+            
+            <div class="market-card-body">
+                <div class="market-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Trade</span>
+                        <span class="detail-value">${formatCurrencyDisplay(market.tradeAmount)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Cashout</span>
+                        <span class="detail-value">${formatCurrencyDisplay(market.cashoutAmount)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Period</span>
+                        <span class="detail-value">${market.period}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="market-action-btn" onclick="handleTrade('crypto', '${market.id}', ${market.tradeAmount})">
+                <i class="fas fa-arrow-right"></i> Trade
+            </button>
+        </div>
+    `).join('');
+}
+
+/**
+ * Display Livestock Markets
+ */
+function displayLivestockMarkets() {
+    const livestockContainer = document.getElementById('livestockMarketCards');
+    
+    if (!livestockContainer) return;
+    
+    livestockContainer.innerHTML = MARKETS_DATA.livestock.map(market => `
+        <div class="market-card">
+            <div class="market-card-header">
+                <div class="market-card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 14px; overflow: hidden;">
+                    <img src="${market.image}" alt="${market.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="market-card-info">
+                    <h3>${market.name} Market</h3>
+                    <p>${market.location ? `<i class="fas fa-map-marker-alt"></i> ${market.location}` : market.symbol}</p>
+                </div>
+            </div>
+            
+            <div class="market-card-body">
+                <div class="market-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Trade</span>
+                        <span class="detail-value">${formatCurrencyDisplay(market.tradeAmount)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Cashout</span>
+                        <span class="detail-value">${formatCurrencyDisplay(market.cashoutAmount)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Period</span>
+                        <span class="detail-value">${market.period}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="market-action-btn" onclick="handleTrade('livestock', '${market.id}', ${market.tradeAmount})">
+                <i class="fas fa-arrow-right"></i> Trade
+            </button>
+        </div>
+    `).join('');
+}
+
+/**
+ * Handle Trade Action
+ */
+function handleTrade(marketType, marketId, tradeAmount) {
+    const userBalance = parseFloat(localStorage.getItem('userBalance') || '0');
+    
+    if (userBalance < tradeAmount) {
+        showNotification(`Insufficient balance. Need ₵${tradeAmount} but you have ₵${userBalance}`, 'error');
         return;
     }
     
-    tiersList.innerHTML = tiers.map(tier => {
-        const isAccessible = tier.is_accessible;
-        const canClaim = tier.can_claim;
-        const isLocked = tier.is_locked;
-        const lastClaim = tier.last_claim_time ? new Date(tier.last_claim_time) : null;
-        const nextClaim = tier.next_claim_time ? new Date(tier.next_claim_time) : null;
-        const nextUnlock = tier.next_unlock_time ? new Date(tier.next_unlock_time) : null;
-        
-        let buttonHTML = '';
-        let statusClass = 'locked';
-        let statusText = 'LOCKED';
-        
-        if (!isAccessible && tier.tier_id !== 0) {
-            buttonHTML = `<button class="tier-action-btn tier-locked-btn" disabled>
-                LOCKED - Need ₵${tier.required_amount}
-            </button>`;
-            statusClass = 'locked';
-            statusText = 'LOCKED';
-        } else if (isLocked && tier.tier_id !== 0) {
-            // Tier is locked because user claimed from another paid tier
-            const timeRemaining = getTimeRemaining(nextUnlock);
-            buttonHTML = `
-                <button class="tier-action-btn tier-locked-btn" disabled>
-                    LOCKED - CLAIM FROM TIER ${tier.active_paid_tier_id}
-                </button>
-                <div class="cooldown-timer">Unlocks in ${timeRemaining}</div>
-            `;
-            statusClass = 'locked';
-            statusText = 'LOCKED';
-        } else if (canClaim) {
-            buttonHTML = `<button class="tier-action-btn tier-claim-btn" onclick="claimTierReward(${tier.tier_id}, '${userId}')">
-                CLAIM ₵${tier.daily_reward} REWARD
-            </button>`;
-            statusClass = 'unlocked';
-            statusText = 'READY';
-        } else {
-            const timeRemaining = getTimeRemaining(nextClaim);
-            buttonHTML = `
-                <button class="tier-action-btn tier-cooldown-btn" disabled>
-                    CLAIMED - COOLDOWN
-                </button>
-                <div class="cooldown-timer">Available in ${timeRemaining}</div>
-            `;
-            statusClass = 'claimed';
-            statusText = 'CLAIMED';
-        }
-        
-        return `
-            <div class="tier-card tier-${tier.tier_id} ${statusClass}">
-                <div class="tier-card-header">
-                    <div class="tier-name">
-                        <div class="tier-icon">
-                            ${getTierIcon(tier.tier_id)}
-                        </div>
-                        <div class="tier-title">
-                            <h3>${tier.name} Tier</h3>
-                            <p>Tier ${tier.tier_id}</p>
-                        </div>
-                    </div>
-                    <div class="tier-status ${statusClass}">
-                        ${statusText}
-                    </div>
-                </div>
-                
-                <div class="tier-card-body">
-                    <div class="tier-requirements">
-                        <div class="requirement-box required">
-                            <div class="label">Required Balance</div>
-                            <div class="value">₵${tier.required_amount}</div>
-                        </div>
-                        <div class="requirement-box reward">
-                            <div class="label">Daily Reward</div>
-                            <div class="value">₵${tier.daily_reward}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                ${buttonHTML}
-            </div>
-        `;
-    }).join('');
-}
-
-/**
- * Get Tier Icon
- */
-function getTierIcon(tierId) {
-    const icons = {
-        0: '<i class="fas fa-star"></i>',
-        1: '<i class="fas fa-shield-alt"></i>',
-        2: '<i class="fas fa-crown"></i>',
-        3: '<i class="fas fa-gem"></i>',
-        4: '<i class="fas fa-trophy"></i>'
+    // Find the market details
+    const allMarkets = [...MARKETS_DATA.crypto, ...MARKETS_DATA.livestock];
+    const market = allMarkets.find(m => m.id === marketId);
+    
+    if (!market) {
+        showNotification('Market not found', 'error');
+        return;
+    }
+    
+    // Store trade data for confirmation
+    window.currentTrade = {
+        marketType: marketType,
+        marketId: marketId,
+        market: market,
+        tradeAmount: tradeAmount,
+        cashoutAmount: market.cashoutAmount,
+        period: market.period
     };
-    return icons[tierId] || '<i class="fas fa-star"></i>';
+    
+    // Display trade initiation modal
+    displayTradeModal(market, tradeAmount);
 }
 
 /**
- * Get Time Remaining
+ * Display Trade Initiation Modal
  */
-function getTimeRemaining(futureDate) {
-    if (!futureDate) return 'soon';
+function displayTradeModal(market, tradeAmount) {
+    const usdAmount = convertToUSD(tradeAmount);
+    const returnAmount = market.cashoutAmount - tradeAmount;
     
-    const now = new Date();
-    const diff = futureDate - now;
+    document.getElementById('tradeImage').src = market.image;
+    document.getElementById('tradeName').textContent = market.name;
+    document.getElementById('tradeSymbol').textContent = market.symbol;
+    document.getElementById('investAmount').textContent = `GH₵${tradeAmount.toFixed(2)} ($${usdAmount})`;
+    document.getElementById('cashoutPeriod').textContent = `GH₵${market.cashoutAmount.toFixed(2)} ($${convertToUSD(market.cashoutAmount)})`;
+    document.getElementById('returnValue').textContent = `+ GH₵${returnAmount.toFixed(2)} ($${convertToUSD(returnAmount)})`;
+    document.getElementById('tradePeriod').textContent = market.period;
     
-    if (diff <= 0) return 'now';
+    document.getElementById('tradeInitialModal').classList.add('active');
+}
+
+/**
+ * Close Trade Modal
+ */
+function closeTradeModal() {
+    document.getElementById('tradeInitialModal').classList.remove('active');
+    window.currentTrade = null;
+}
+
+/**
+ * Confirm Trade and Deduct Balance
+ */
+function confirmTrade() {
+    if (!window.currentTrade) return;
     
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const trade = window.currentTrade;
+    const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+    const currentBalance = parseFloat(localStorage.getItem('userBalance') || '0');
+    const newBalance = currentBalance - trade.tradeAmount;
     
-    if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-    } else {
-        return `${minutes}m`;
+    // Track total outflow
+    const totalOutflow = parseFloat(localStorage.getItem('totalOutflow') || '0');
+    localStorage.setItem('totalOutflow', (totalOutflow + trade.tradeAmount).toFixed(2));
+    
+    // Deduct balance immediately
+    localStorage.setItem('userBalance', newBalance.toFixed(2));
+    document.getElementById('homeBalance').textContent = newBalance.toFixed(2);
+    document.getElementById('marketAvailableBalance').textContent = newBalance.toFixed(2);
+    
+    // Update outflow display
+    document.getElementById('totalOutflow').textContent = (totalOutflow + trade.tradeAmount).toFixed(2);
+    
+    // Close initiation modal
+    closeTradeModal();
+    
+    // Show success modal with countdown
+    displaySuccessModal(trade);
+    
+    // Start countdown timer
+    startCountdown(trade);
+    
+    // Log the trade (optional: send to backend)
+    logTradeTransaction(userId, trade);
+}
+
+/**
+ * Display Success Modal with Countdown
+ */
+function displaySuccessModal(trade) {
+    const returnAmount = trade.cashoutAmount - trade.tradeAmount;
+    const usdReturnAmount = convertToUSD(returnAmount);
+    const usdTradeAmount = convertToUSD(trade.tradeAmount);
+    
+    document.getElementById('successInvestAmount').textContent = `GH₵${trade.tradeAmount.toFixed(2)} ($${usdTradeAmount})`;
+    document.getElementById('successReturnAmount').textContent = `+ GH₵${returnAmount.toFixed(2)} ($${usdReturnAmount})`;
+    
+    document.getElementById('tradeSuccessModal').classList.add('active');
+}
+
+/**
+ * Close Success Modal
+ */
+function closeSuccessModal() {
+    document.getElementById('tradeSuccessModal').classList.remove('active');
+}
+
+/**
+ * Start Countdown Timer
+ */
+function startCountdown(trade) {
+    // Parse period to get duration in seconds
+    let durationSeconds = 86400; // Default 24 hours
+    
+    if (trade.period === '7Days') {
+        durationSeconds = 604800; // 7 days in seconds
+    } else if (trade.period === '3Days') {
+        durationSeconds = 259200; // 3 days in seconds
+    } else if (trade.period === '24Hours') {
+        durationSeconds = 86400; // 24 hours in seconds
     }
+    
+    // Get or set the trade completion time
+    const now = new Date().getTime();
+    const completionTime = now + (durationSeconds * 1000);
+    const tradeId = `trade_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    
+    // Store trade info for later retrieval
+    const trades = JSON.parse(localStorage.getItem('activeTrades') || '[]');
+    trades.push({
+        id: tradeId,
+        tradeAmount: trade.tradeAmount,
+        cashoutAmount: trade.cashoutAmount,
+        completionTime: completionTime,
+        marketName: trade.market.name,
+        createdAt: now,
+        status: 'pending'
+    });
+    localStorage.setItem('activeTrades', JSON.stringify(trades));
+
+    // Keep activity history so completed trades remain visible
+    const tradeActivities = JSON.parse(localStorage.getItem('tradeActivities') || '[]');
+    tradeActivities.unshift({
+        id: tradeId,
+        tradeAmount: trade.tradeAmount,
+        cashoutAmount: trade.cashoutAmount,
+        completionTime: completionTime,
+        marketName: trade.market.name,
+        createdAt: now,
+        status: 'pending'
+    });
+    localStorage.setItem('tradeActivities', JSON.stringify(tradeActivities.slice(0, 20)));
+    
+    // Update countdown display and check for completion
+    updateCountdown(completionTime);
+    displayActivities();
 }
 
 /**
- * Claim Tier Reward
+ * Update Countdown Timer Display
  */
-async function claimTierReward(tierId, userId) {
-    try {
-        const button = event.target;
-        button.disabled = true;
-        button.textContent = 'Processing...';
+function updateCountdown(completionTime) {
+    const timerInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const timeRemaining = completionTime - now;
         
-        const response = await fetch(`${apiBase}/tiers/claim/${userId}/${tierId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            
+            // Countdown complete - credit the account
+            creditTradeReturn();
+            
+            // Update display to show 00:00:00:00
+            document.getElementById('countdownDays').textContent = '00';
+            document.getElementById('countdownHours').textContent = '00';
+            document.getElementById('countdownMinutes').textContent = '00';
+            document.getElementById('countdownSeconds').textContent = '00';
+            
+            return;
+        }
         
-        const data = await response.json();
+        // Calculate time units
+        const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
         
-        if (response.ok) {
-            showNotification(`Claimed ₵${data.reward} from ${data.tier} tier!`, 'success');
-            // Reload stats and tiers to update the display
-            loadUserStats();
-            loadTiers();
+        // Update display
+        document.getElementById('countdownDays').textContent = String(days).padStart(2, '0');
+        document.getElementById('countdownHours').textContent = String(hours).padStart(2, '0');
+        document.getElementById('countdownMinutes').textContent = String(minutes).padStart(2, '0');
+        document.getElementById('countdownSeconds').textContent = String(seconds).padStart(2, '0');
+    }, 1000);
+}
+
+/**
+ * Resume Active Trade Countdowns
+ */
+function resumeActiveTrades() {
+    const trades = JSON.parse(localStorage.getItem('activeTrades') || '[]');
+    
+    if (trades.length === 0) return;
+    
+    migrateTradeActivitiesIfNeeded();
+
+    // Check for completed trades
+    const now = new Date().getTime();
+    const remainingTrades = [];
+    let totalCreditAmount = 0;
+    
+    trades.forEach((trade) => {
+        if (trade.completionTime <= now) {
+            // Trade is complete
+            totalCreditAmount += trade.cashoutAmount;
+            markTradeActivityAsCompleted(trade.id);
         } else {
-            // Handle locked tier error
-            if (data.locked_reason) {
-                const unlockTime = new Date(data.tier_unlocks_at);
-                const formattedTime = unlockTime.toLocaleTimeString();
-                showNotification(`This tier is locked. ${data.locked_reason}. Unlocks at ${formattedTime}`, 'error');
-            } else {
-                showNotification(data.error || 'Failed to claim reward', 'error');
-            }
-            button.disabled = false;
-            button.textContent = `CLAIM ₵${data.reward || 'Reward'} REWARD`;
+            // Trade is still active - resume countdown
+            remainingTrades.push(trade);
+            updateCountdown(trade.completionTime);
+            
+            // Display success modal for ongoing trades
+            displayActiveTradeModal(trade);
         }
-    } catch (error) {
-        console.error('Error claiming reward:', error);
-        showNotification('Error claiming reward', 'error');
-        if (event.target) {
-            event.target.disabled = false;
+    });
+    
+    // Credit any completed trades
+    if (totalCreditAmount > 0) {
+        const currentBalance = parseFloat(localStorage.getItem('userBalance') || '0');
+        const newBalance = currentBalance + totalCreditAmount;
+        localStorage.setItem('userBalance', newBalance.toFixed(2));
+        
+        if (document.getElementById('homeBalance')) {
+            document.getElementById('homeBalance').textContent = newBalance.toFixed(2);
+        }
+        if (document.getElementById('marketAvailableBalance')) {
+            document.getElementById('marketAvailableBalance').textContent = newBalance.toFixed(2);
         }
     }
+    
+    // Save remaining active trades
+    localStorage.setItem('activeTrades', JSON.stringify(remainingTrades));
+    
+    // Display activities
+    displayActivities();
+}
+
+/**
+ * Display Active Trade Modal for Ongoing Trades
+ */
+function displayActiveTradeModal(trade) {
+    const returnAmount = trade.cashoutAmount - trade.tradeAmount;
+    const usdReturnAmount = convertToUSD(returnAmount);
+    const usdTradeAmount = convertToUSD(trade.tradeAmount);
+    
+    document.getElementById('successInvestAmount').textContent = `GH₵${trade.tradeAmount.toFixed(2)} ($${usdTradeAmount})`;
+    document.getElementById('successReturnAmount').textContent = `+ GH₵${returnAmount.toFixed(2)} ($${usdReturnAmount})`;
+}
+
+/**
+ * Credit Trade Return to User Balance
+ */
+function creditTradeReturn() {
+    const trades = JSON.parse(localStorage.getItem('activeTrades') || '[]');
+    
+    let totalCreditAmount = 0;
+    const completedTrades = [];
+    
+    // Find completed trades and calculate total credit
+    trades.forEach((trade, index) => {
+        if (trade.completionTime <= new Date().getTime()) {
+            totalCreditAmount += trade.cashoutAmount;
+            completedTrades.push(trade);
+            markTradeActivityAsCompleted(trade.id);
+        }
+    });
+    
+    if (totalCreditAmount > 0) {
+        const currentBalance = parseFloat(localStorage.getItem('userBalance') || '0');
+        const newBalance = currentBalance + totalCreditAmount;
+        
+        localStorage.setItem('userBalance', newBalance.toFixed(2));
+        document.getElementById('homeBalance').textContent = newBalance.toFixed(2);
+        document.getElementById('marketAvailableBalance').textContent = newBalance.toFixed(2);
+        
+        // Remove completed trades
+        const remainingTrades = trades.filter(t => t.completionTime > new Date().getTime());
+        localStorage.setItem('activeTrades', JSON.stringify(remainingTrades));
+        
+        // Show success notification
+        showNotification(`🎉 Trade completed! You've received ₵${totalCreditAmount.toFixed(2)}`, 'success');
+        loadUserStats();
+        displayActivities();
+    }
+}
+
+function migrateTradeActivitiesIfNeeded() {
+    const tradeActivities = JSON.parse(localStorage.getItem('tradeActivities') || '[]');
+    if (tradeActivities.length > 0) {
+        return;
+    }
+
+    const activeTrades = JSON.parse(localStorage.getItem('activeTrades') || '[]');
+    if (activeTrades.length === 0) {
+        return;
+    }
+
+    const migrated = activeTrades.map(trade => ({
+        ...trade,
+        status: trade.completionTime <= Date.now() ? 'completed' : 'pending'
+    }));
+    localStorage.setItem('tradeActivities', JSON.stringify(migrated.slice(0, 20)));
+}
+
+function markTradeActivityAsCompleted(tradeId) {
+    if (!tradeId) return;
+
+    const tradeActivities = JSON.parse(localStorage.getItem('tradeActivities') || '[]');
+    const updated = tradeActivities.map(activity => {
+        if (activity.id === tradeId) {
+            return { ...activity, status: 'completed' };
+        }
+        return activity;
+    });
+
+    localStorage.setItem('tradeActivities', JSON.stringify(updated));
+}
+
+/**
+ * Log Trade Transaction
+ */
+function logTradeTransaction(userId, trade) {
+    // Optional: Send trade data to backend for logging
+    const tradeLog = {
+        userId: userId,
+        marketType: trade.marketType,
+        marketId: trade.marketId,
+        marketName: trade.market.name,
+        tradeAmount: trade.tradeAmount,
+        cashoutAmount: trade.cashoutAmount,
+        period: trade.period,
+        timestamp: new Date().toISOString()
+    };
+    
+    console.log('Trade logged:', tradeLog);
+    
+    // You can send this to backend if needed:
+    // fetch(`${apiBase}/trades/log`, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(tradeLog)
+    // });
 }
 
 /**
