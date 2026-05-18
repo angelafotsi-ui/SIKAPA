@@ -162,9 +162,143 @@
                 font-size: 1.1rem;
             }
         }
+
+        /* Activity Notification Dropdown Styles */
+        .notification-container {
+          position: fixed;
+          top: 80px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          width: 100%;
+          max-width: 600px;
+          padding: 0 20px;
+          pointer-events: none;
+        }
+
+        .notification-item {
+          pointer-events: auto;
+          background: linear-gradient(135deg, #37017a 0%, #5b22b6 100%);
+          color: white;
+          padding: 16px 20px;
+          border-radius: 12px;
+          box-shadow: 0 20px 60px rgba(55, 1, 122, 0.4);
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          animation: notifSlideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          cursor: pointer;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          backdrop-filter: blur(10px);
+          transition: all 0.3s ease;
+        }
+
+        .notification-item:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 30px 80px rgba(55, 1, 122, 0.5);
+          border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .notification-item.removing {
+          animation: notifSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .notification-icon {
+          font-size: 24px;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .notification-text {
+          flex: 1;
+          font-size: 15px;
+          font-weight: 600;
+          line-height: 1.4;
+          letter-spacing: 0.3px;
+        }
+
+        .notification-close {
+          background: rgba(255, 255, 255, 0.25);
+          border: none;
+          color: white;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: all 0.3s;
+          font-size: 20px;
+          font-weight: bold;
+          padding: 0;
+          line-height: 1;
+        }
+
+        .notification-close:hover {
+          background: rgba(255, 255, 255, 0.4);
+        }
+
+        @keyframes notifSlideDown {
+          0% {
+            opacity: 0;
+            transform: translateY(-50px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes notifSlideUp {
+          0% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-50px);
+          }
+        }
+
+        @media (max-width: 600px) {
+          .notification-container {
+            top: 60px;
+            padding: 0 15px;
+            max-width: calc(100% - 30px);
+          }
+          
+          .notification-item {
+            padding: 14px 16px;
+            gap: 12px;
+          }
+          
+          .notification-icon {
+            font-size: 20px;
+          }
+          
+          .notification-text {
+            font-size: 14px;
+          }
+          
+          .notification-close {
+            width: 28px;
+            height: 28px;
+            font-size: 18px;
+          }
+        }
     </style>
 </head>
 <body>
+    <!-- Activity Notification Dropdown -->
+    <div class="notification-container" id="notificationContainer"></div>
+    
     <!-- Welcome Popup -->
     <div class="welcome-popup" id="welcomePopup">
         <div class="welcome-popup-backdrop" onclick="closeWelcomePopup()"></div>
@@ -336,5 +470,6 @@
             }
         }
     </script>
+    <script src="js/activity-notifications.js"></script>
 </body>
 </html>

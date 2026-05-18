@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = 'login.html';
         return;
     }
+    
+    // Check and credit any completed trades
+    checkAndCreditCompletedTrades();
+    
     loadUserProfile();
     loadUserStats();
     loadTransactions();
@@ -20,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(loadUserStats, 10000);
     setInterval(loadTransactions, 30000);
     setInterval(loadSupportMessages, 7000);
+    setInterval(checkAndCreditCompletedTrades, 30000); // Check every 30 seconds
 
     const supportInput = document.getElementById('supportInput');
     if (supportInput) {
@@ -1078,19 +1083,17 @@ function confirmTrade() {
     const trade = window.currentTrade;
     const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
     const currentBalance = parseFloat(localStorage.getItem('userBalance') || '0');
+    
+    if (currentBalance < trade.tradeAmount) {
+        showNotification('Insufficient balance', 'error');
+        return;
+    }
+    
+    // Immediately deduct from frontend balance (optimistic update)
     const newBalance = currentBalance - trade.tradeAmount;
-    
-    // Track total outflow
-    const totalOutflow = parseFloat(localStorage.getItem('totalOutflow') || '0');
-    localStorage.setItem('totalOutflow', (totalOutflow + trade.tradeAmount).toFixed(2));
-    
-    // Deduct balance immediately
     localStorage.setItem('userBalance', newBalance.toFixed(2));
     document.getElementById('homeBalance').textContent = newBalance.toFixed(2);
     document.getElementById('marketAvailableBalance').textContent = newBalance.toFixed(2);
-    
-    // Update outflow display
-    document.getElementById('totalOutflow').textContent = (totalOutflow + trade.tradeAmount).toFixed(2);
     
     // Close initiation modal
     closeTradeModal();
@@ -1098,11 +1101,84 @@ function confirmTrade() {
     // Show success modal with countdown
     displaySuccessModal(trade);
     
-    // Start countdown timer
-    startCountdown(trade);
+    // Send trade to backend for persistence
+    initiateTradeWithBackend(userId, trade);
+}
+
+/**
+ * Initiate Trade with Backend
+ */
+async function initiateTradeWithBackend(userId, trade) {
+    try {
+        const response = await fetch(`${apiBase}/trades/initiate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: userId,
+                marketId: trade.marketId,
+                marketType: trade.marketType,
+                marketName: trade.market.name,
+                tradeAmount: trade.tradeAmount,
+                cashoutAmount: trade.cashoutAmount,
+                period: trade.period
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success && data.trade) {
+            const backendTrade = data.trade;
+            
+            // Start countdown with backend completion time
+            startCountdownWithBackendTrade(backendTrade);
+            
+            console.log('[Trades] Trade initiated with backend:', backendTrade.id);
+        }
+    } catch (error) {
+        console.error('[Trades] Error initiating trade with backend:', error);
+        // Still proceed with local countdown
+        const tradeId = `trade_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+        const durationSeconds = trade.period === '7Days' ? 604800 : trade.period === '3Days' ? 259200 : 86400;
+        startCountdown({ ...trade, id: tradeId });
+    }
+}
+
+/**
+ * Start Countdown with Backend Trade Data
+ */
+function startCountdownWithBackendTrade(backendTrade) {
+    const tradeId = backendTrade.id;
+    const completionTime = backendTrade.completionTime;
     
-    // Log the trade (optional: send to backend)
-    logTradeTransaction(userId, trade);
+    // Store trade info for later retrieval
+    const trades = JSON.parse(localStorage.getItem('activeTrades') || '[]');
+    trades.push({
+        id: tradeId,
+        tradeAmount: backendTrade.tradeAmount,
+        cashoutAmount: backendTrade.cashoutAmount,
+        completionTime: completionTime,
+        marketName: backendTrade.marketName,
+        createdAt: backendTrade.createdAt,
+        status: 'pending'
+    });
+    localStorage.setItem('activeTrades', JSON.stringify(trades));
+
+    // Keep activity history
+    const tradeActivities = JSON.parse(localStorage.getItem('tradeActivities') || '[]');
+    tradeActivities.unshift({
+        id: tradeId,
+        tradeAmount: backendTrade.tradeAmount,
+        cashoutAmount: backendTrade.cashoutAmount,
+        completionTime: completionTime,
+        marketName: backendTrade.marketName,
+        createdAt: backendTrade.createdAt,
+        status: 'pending'
+    });
+    localStorage.setItem('tradeActivities', JSON.stringify(tradeActivities.slice(0, 20)));
+    
+    // Update countdown display
+    updateCountdown(completionTime);
+    displayActivities();
 }
 
 /**
@@ -1218,6 +1294,33 @@ function updateCountdown(completionTime) {
  * Resume Active Trade Countdowns
  */
 function resumeActiveTrades() {
+    const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+    
+    // Fetch trades from backend
+    if (userId) {
+        fetch(`${apiBase}/trades/user/${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.trades && data.trades.length > 0) {
+                    // Update localStorage with backend trades
+                    localStorage.setItem('activeTrades', JSON.stringify(data.activeTrades));
+                    localStorage.setItem('tradeActivities', JSON.stringify(data.trades.slice(0, 20)));
+                }
+                resumeActiveTradesLocal();
+            })
+            .catch(err => {
+                console.error('[Trades] Error fetching trades:', err);
+                resumeActiveTradesLocal();
+            });
+    } else {
+        resumeActiveTradesLocal();
+    }
+}
+
+/**
+ * Resume Active Trades (Local Processing)
+ */
+function resumeActiveTradesLocal() {
     const trades = JSON.parse(localStorage.getItem('activeTrades') || '[]');
     
     if (trades.length === 0) return;
@@ -1370,6 +1473,35 @@ function logTradeTransaction(userId, trade) {
     //     headers: { 'Content-Type': 'application/json' },
     //     body: JSON.stringify(tradeLog)
     // });
+}
+
+/**
+ * Check and Credit Completed Trades with Backend
+ */
+async function checkAndCreditCompletedTrades() {
+    try {
+        const userId = localStorage.getItem('userId') || localStorage.getItem('user_uid');
+        if (!userId) return;
+
+        const response = await fetch(`${apiBase}/trades/check-and-credit/${userId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        
+        if (data.totalCredited > 0) {
+            console.log('[Trades] Credited:', data.totalCredited);
+            // Reload stats to show updated balance
+            loadUserStats();
+            displayActivities();
+            showNotification(`🎉 ${data.creditedTrades.length} trade(s) completed! Credited ₵${data.totalCredited.toFixed(2)}`, 'success');
+        }
+    } catch (error) {
+        console.error('[Trades] Error checking for completed trades:', error);
+    }
 }
 
 /**

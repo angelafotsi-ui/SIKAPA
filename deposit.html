@@ -89,40 +89,6 @@
             color: #333;
         }
 
-        .amount-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .amount-quick-select {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .amount-btn {
-            padding: 0.8rem;
-            border: 2px solid #ddd;
-            background: white;
-            color: #333;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-        }
-
-        .amount-btn:hover {
-            border-color: #37017a;
-            background: #f0f0ff;
-        }
-
-        .amount-btn.active {
-            background: #37017a;
-            color: white;
-            border-color: #37017a;
-        }
-
         .upload-area {
             border: 2px dashed #ddd;
             border-radius: 5px;
@@ -309,15 +275,9 @@
             </div>
 
             <!-- Amount Selection -->
-            <div class="amount-section">
-                <label>Amount *</label>
-                <div class="amount-quick-select">
-                    <button type="button" class="amount-btn" data-amount="30" onclick="selectAmount(30)">₵30</button>
-                    <button type="button" class="amount-btn" data-amount="100" onclick="selectAmount(100)">₵100</button>
-                    <button type="button" class="amount-btn" data-amount="250" onclick="selectAmount(250)">₵250</button>
-                    <button type="button" class="amount-btn" data-amount="500" onclick="selectAmount(500)">₵500</button>
-                </div>
-                <input type="hidden" id="selectedAmount" value="">
+            <div class="form-group">
+                <label for="customAmount">Amount (₵) *</label>
+                <input type="number" id="customAmount" placeholder="Enter amount to deposit" min="0" step="0.01" required>
                 <span class="error-message" id="amountError"></span>
             </div>
 
@@ -387,19 +347,17 @@
                 }
             });
 
+            // Setup custom amount input listener
+            const customAmountInput = document.getElementById('customAmount');
+            if (customAmountInput) {
+                customAmountInput.addEventListener('input', clearAmountError);
+            }
+
             // Form submission
             document.getElementById('depositForm').addEventListener('submit', submitDeposit);
         });
 
-        function selectAmount(amount) {
-            // Remove active class from all buttons
-            document.querySelectorAll('.amount-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            // Add active class to clicked button
-            event.target.classList.add('active');
-            document.getElementById('selectedAmount').value = amount;
+        function clearAmountError() {
             document.getElementById('amountError').textContent = '';
         }
 
@@ -433,7 +391,7 @@
             // Validate inputs
             const senderName = document.getElementById('senderName').value.trim();
             const senderNumber = document.getElementById('senderNumber').value.trim();
-            const amount = document.getElementById('selectedAmount').value;
+            const amount = document.getElementById('customAmount').value.trim();
 
             if (!senderName) {
                 document.getElementById('senderNameError').textContent = 'Sender name is required';
@@ -445,8 +403,8 @@
                 return;
             }
 
-            if (!amount) {
-                document.getElementById('amountError').textContent = 'Please select an amount';
+            if (!amount || parseFloat(amount) <= 0) {
+                document.getElementById('amountError').textContent = 'Please enter a valid amount greater than 0';
                 return;
             }
 
@@ -492,10 +450,8 @@
 
                     // Reset form
                     document.getElementById('depositForm').reset();
-                    document.getElementById('selectedAmount').value = '';
                     document.getElementById('fileName').textContent = '';
                     selectedFile = null;
-                    document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
 
                     // Redirect to dashboard after 2 seconds
                     setTimeout(() => {

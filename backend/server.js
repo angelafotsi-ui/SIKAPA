@@ -94,6 +94,7 @@ const tierRoutes = require('./routes/tiers');
 const depositRoutes = require('./routes/deposit');
 const emailRoutes = require('./routes/email');
 const supportRoutes = require('./routes/support');
+const tradesRoutes = require('./routes/trades');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
@@ -109,6 +110,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/tiers', tierRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/trades', tradesRoutes);
 app.use('/api', healthRoutes);
 
 console.log('[3] API routes mounted');
