@@ -825,8 +825,8 @@ const MARKETS_DATA = {
             location: 'Gbetsile',
             image: 'images/SNAIL.jpg',
             icon: '<i class="fas fa-bug"></i>',
-            tradeAmount: 20.00, // in GH₵
-            cashoutAmount: 650.00, // in GH₵
+            tradeAmount: 100.00, // in GH₵
+            cashoutAmount: 1100.00, // in GH₵
             period: '7Days'
         },
         {
@@ -869,8 +869,8 @@ const MARKETS_DATA = {
             location: 'Accra',
             image: 'images/POULTRY.jpg',
             icon: '<i class="fas fa-feather-alt"></i>',
-            tradeAmount: 70.00, // in GH₵
-            cashoutAmount: 900.00, // in GH₵
+            tradeAmount: 120.00, // in GH₵
+            cashoutAmount: 1350.00, // in GH₵
             period: '7Days'
         }
     ]
