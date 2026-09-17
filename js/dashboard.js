@@ -880,7 +880,7 @@ const MARKETS_DATA = {
             id: 'mtn',
             name: 'MTN GHANA',
             symbol: 'MTN Ghana Stock Exchange',
-            image: 'images/backdrop.jpg',
+            image: 'images/MTN.png',
             icon: '<i class="fas fa-signal"></i>',
             tradeAmount: 200.00,
             shares: 100,
@@ -893,20 +893,20 @@ const MARKETS_DATA = {
             id: 'kasapreko',
             name: 'KASAPREKO',
             symbol: 'Kasapreko Company Ltd.',
-            image: 'images/backdrop.jpg',
+            image: 'images/KASAPREKO.png',
             icon: '<i class="fas fa-industry"></i>',
             tradeAmount: 220.00,
             shares: 100,
             cashoutAmount: 1600.00,
             period: '5Days',
             actionLabel: 'Buy Stocks',
-            returnLabel: 'Cashout'
+            returnLabel: 'Dividend'
         },
         {
             id: 'dangote',
             name: 'DANGOTE REFINERY IPO',
             symbol: 'Dangote Refinery',
-            image: 'images/backdrop.jpg',
+            image: 'images/DANGOTE.png',
             icon: '<i class="fas fa-building"></i>',
             tradeAmount: 300.00,
             shares: 100,
@@ -1081,11 +1081,11 @@ function displayStockMarkets() {
                 <div class="market-details">
                     <div class="detail-row">
                         <span class="detail-label">${market.actionLabel || 'Buy'}</span>
-                        <span class="detail-value">${formatCurrencyDisplay(market.tradeAmount)} ${market.shares ? `(${market.shares} Shares)` : ''}</span>
+                        <span class="detail-value">GH₵${market.tradeAmount.toFixed(2)} ${market.shares ? `(${market.shares} Shares)` : ''}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">${market.returnLabel || 'Dividend'}</span>
-                        <span class="detail-value">${formatCurrencyDisplay(market.cashoutAmount)}</span>
+                        <span class="detail-value">GH₵${market.cashoutAmount.toFixed(2)}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Period</span>
