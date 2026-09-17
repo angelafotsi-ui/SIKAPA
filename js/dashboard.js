@@ -874,6 +874,48 @@ const MARKETS_DATA = {
             period: '7Days'
         }
     ]
+    ,
+    stocks: [
+        {
+            id: 'mtn',
+            name: 'MTN GHANA',
+            symbol: 'MTN Ghana Stock Exchange',
+            image: 'images/backdrop.jpg',
+            icon: '<i class="fas fa-signal"></i>',
+            tradeAmount: 200.00,
+            shares: 100,
+            cashoutAmount: 1450.00,
+            period: '7Days',
+            actionLabel: 'Buy Stocks',
+            returnLabel: 'Dividend'
+        },
+        {
+            id: 'kasapreko',
+            name: 'KASAPREKO',
+            symbol: 'Kasapreko Company Ltd.',
+            image: 'images/backdrop.jpg',
+            icon: '<i class="fas fa-industry"></i>',
+            tradeAmount: 220.00,
+            shares: 100,
+            cashoutAmount: 1600.00,
+            period: '5Days',
+            actionLabel: 'Buy Stocks',
+            returnLabel: 'Cashout'
+        },
+        {
+            id: 'dangote',
+            name: 'DANGOTE REFINERY IPO',
+            symbol: 'Dangote Refinery',
+            image: 'images/backdrop.jpg',
+            icon: '<i class="fas fa-building"></i>',
+            tradeAmount: 300.00,
+            shares: 100,
+            cashoutAmount: 2450.00,
+            period: '10Days',
+            actionLabel: 'Buy Shares',
+            returnLabel: 'Dividend'
+        }
+    ]
 };
 
 /**
@@ -896,10 +938,12 @@ function formatCurrencyDisplay(ghAmount) {
  */
 async function loadMarkets() {
     try {
-        displayCryptoMarkets();
+        // Show Livestock first, then Ghana Stock Market, then Crypto status and Crypto Market
         displayLivestockMarkets();
-        updateMarketBalance();
+        displayStockMarkets();
         loadCryptoStatus();
+        displayCryptoMarkets();
+        updateMarketBalance();
     } catch (error) {
         console.error('Error loading markets:', error);
         showNotification('Failed to load markets', 'error');
@@ -1015,6 +1059,49 @@ function displayLivestockMarkets() {
 }
 
 /**
+ * Display Ghana Stock Markets
+ */
+function displayStockMarkets() {
+    const stockContainer = document.getElementById('stockMarketCards');
+    if (!stockContainer) return;
+
+    stockContainer.innerHTML = MARKETS_DATA.stocks.map(market => `
+        <div class="market-card">
+            <div class="market-card-header">
+                <div class="market-card-icon" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); border-radius: 14px; overflow: hidden;">
+                    <img src="${market.image}" alt="${market.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="market-card-info">
+                    <h3>${market.name}</h3>
+                    <p>${market.symbol}</p>
+                </div>
+            </div>
+
+            <div class="market-card-body">
+                <div class="market-details">
+                    <div class="detail-row">
+                        <span class="detail-label">${market.actionLabel || 'Buy'}</span>
+                        <span class="detail-value">${formatCurrencyDisplay(market.tradeAmount)} ${market.shares ? `(${market.shares} Shares)` : ''}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">${market.returnLabel || 'Dividend'}</span>
+                        <span class="detail-value">${formatCurrencyDisplay(market.cashoutAmount)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Period</span>
+                        <span class="detail-value">${market.period}</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="market-action-btn" onclick="handleTrade('stocks', '${market.id}', ${market.tradeAmount})">
+                <i class="fas fa-arrow-right"></i> ${market.actionLabel || 'Buy'}
+            </button>
+        </div>
+    `).join('');
+}
+
+/**
  * Handle Trade Action
  */
 function handleTrade(marketType, marketId, tradeAmount) {
@@ -1025,8 +1112,8 @@ function handleTrade(marketType, marketId, tradeAmount) {
         return;
     }
     
-    // Find the market details
-    const allMarkets = [...MARKETS_DATA.crypto, ...MARKETS_DATA.livestock];
+    // Find the market details (include stocks)
+    const allMarkets = [...MARKETS_DATA.crypto, ...MARKETS_DATA.livestock, ...(MARKETS_DATA.stocks || [])];
     const market = allMarkets.find(m => m.id === marketId);
     
     if (!market) {
